@@ -1,0 +1,415 @@
+{
+  "idioms": [
+    {
+      "idiom_id": 1,
+      "hanja": "一石二鳥",
+      "hangul": "일석이조",
+      "meaning": "돌 하나로 새 두 마리를 잡는다는 뜻으로, 한 가지 일을 하여 두 가지 이익을 얻음을 이르는 말",
+      "example_sentence": "이번 출장은 업무 협의와 관광을 겸할 수 있어서 일석이조였다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 2,
+      "hanja": "自業自得",
+      "hangul": "자업자득",
+      "meaning": "자기가 저지른 일의 결과를 자기가 받음",
+      "example_sentence": "게으름을 피우다가 낙제한 것은 자업자득이다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 3,
+      "hanja": "四面楚歌",
+      "hangul": "사면초가",
+      "meaning": "아무에게도 도움을 받지 못하는 외롭고 곤란한 지경에 빠짐",
+      "example_sentence": "회사가 부도 위기에 처하자 사장은 사면초가에 빠졌다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 4,
+      "hanja": "臥薪嘗膽",
+      "hangul": "와신상담",
+      "meaning": "원수를 갚거나 목적을 이루기 위해 온갖 괴로움을 참고 견딤",
+      "example_sentence": "그는 와신상담 끝에 마침내 사법시험에 합격했다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 5,
+      "hanja": "同病相憐",
+      "hangul": "동병상련",
+      "meaning": "같은 병을 앓는 사람끼리 서로 가엾게 여긴다는 뜻으로, 어려운 처지에 있는 사람끼리 서로 동정하고 도움",
+      "example_sentence": "실직자들이 모여 동병상련의 정으로 서로를 위로했다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 6,
+      "hanja": "千差萬別",
+      "hangul": "천차만별",
+      "meaning": "여러 가지가 각각 차이가 있어 매우 다름",
+      "example_sentence": "사람들의 생각은 천차만별이어서 합의점을 찾기 어려웠다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 7,
+      "hanja": "馬耳東風",
+      "hangul": "마이동풍",
+      "meaning": "남의 말을 귀담아듣지 않고 지나쳐 흘려버림",
+      "example_sentence": "아무리 충고해도 마이동풍으로 듣고 흘려버린다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 8,
+      "hanja": "九死一生",
+      "hangul": "구사일생",
+      "meaning": "아홉 번 죽을 뻔하다가 한 번 살아남. 죽을 고비를 여러 번 넘기고 겨우 살아남",
+      "example_sentence": "교통사고로 구사일생으로 살아났다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 9,
+      "hanja": "背水之陣",
+      "hangul": "배수진",
+      "meaning": "물을 등지고 진을 친다는 뜻으로, 결사적으로 싸우거나 일을 함을 이르는 말",
+      "example_sentence": "팀은 배수진을 치고 마지막 경기에 임했다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 10,
+      "hanja": "針小棒大",
+      "hangul": "침소봉대",
+      "meaning": "바늘만 한 것을 몽둥이만 하다고 한다는 뜻으로, 작은 일을 크게 부풀려 말함",
+      "example_sentence": "언론이 사소한 일을 침소봉대하여 보도했다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 11,
+      "hanja": "百聞不如一見",
+      "hangul": "백문불여일견",
+      "meaning": "백 번 듣는 것이 한 번 보는 것만 못함",
+      "example_sentence": "아무리 설명을 들어도 백문불여일견, 직접 보는 것이 최고다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 12,
+      "hanja": "以心傳心",
+      "hangul": "이심전심",
+      "meaning": "마음에서 마음으로 전함. 말을 하지 않아도 마음과 마음으로 통함",
+      "example_sentence": "오랜 친구 사이라 이심전심으로 서로의 생각을 안다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 13,
+      "hanja": "塞翁之馬",
+      "hangul": "새옹지마",
+      "meaning": "인생의 길흉화복은 변화가 많아서 예측하기 어려움",
+      "example_sentence": "지금은 힘들지만 새옹지마라고, 언젠가 좋은 일이 있을 것이다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 14,
+      "hanja": "朝三暮四",
+      "hangul": "조삼모사",
+      "meaning": "간사한 꾀로 남을 속여 희롱함. 또는 당장의 차이만 알고 결과가 같음을 모름",
+      "example_sentence": "정부의 정책은 조삼모사에 불과하다는 비판을 받았다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 15,
+      "hanja": "苦盡甘來",
+      "hangul": "고진감래",
+      "meaning": "쓴 것이 다하면 단 것이 온다는 뜻으로, 고생 끝에 즐거움이 옴",
+      "example_sentence": "오랜 노력 끝에 고진감래로 성공을 거두었다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 16,
+      "hanja": "破竹之勢",
+      "hangul": "파죽지세",
+      "meaning": "대나무를 쪼개는 기세라는 뜻으로, 거침없이 빠르게 진행되는 형세",
+      "example_sentence": "우리 팀은 파죽지세로 연승을 이어갔다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 17,
+      "hanja": "羊頭狗肉",
+      "hangul": "양두구육",
+      "meaning": "양의 머리를 걸어 놓고 개고기를 판다는 뜻으로, 겉과 속이 다름",
+      "example_sentence": "그 회사의 광고는 양두구육이어서 실제 제품은 형편없었다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 18,
+      "hanja": "隔世之感",
+      "hangul": "격세지감",
+      "meaning": "세상이 바뀐 느낌. 세태의 변천이 심하여 딴 세상 같은 느낌",
+      "example_sentence": "10년 만에 고향을 방문하니 격세지감이 들었다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 19,
+      "hanja": "漁父之利",
+      "hangul": "어부지리",
+      "meaning": "두 사람이 이해관계로 다투는 사이에 제3자가 애쓰지 않고 이익을 봄",
+      "example_sentence": "두 회사가 경쟁하는 사이 우리가 어부지리를 얻었다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 20,
+      "hanja": "同床異夢",
+      "hangul": "동상이몽",
+      "meaning": "같은 자리에 자면서 다른 꿈을 꾼다는 뜻으로, 겉으로는 같이 행동하면서 속으로는 각각 다른 생각을 함",
+      "example_sentence": "두 정당은 연합했지만 동상이몽이었다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 21,
+      "hanja": "見物生心",
+      "hangul": "견물생심",
+      "meaning": "물건을 보면 그것을 가지고 싶은 욕심이 생김",
+      "example_sentence": "쇼핑몰에 가면 견물생심으로 자꾸 사게 된다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 22,
+      "hanja": "粉骨碎身",
+      "hangul": "분골쇄신",
+      "meaning": "뼈가 가루가 되고 몸이 부서진다는 뜻으로, 있는 힘을 다하여 노력함",
+      "example_sentence": "나라를 위해 분골쇄신하여 일했다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 23,
+      "hanja": "老馬之智",
+      "hangul": "노마지지",
+      "meaning": "늙은 말의 지혜라는 뜻으로, 경험이 많은 사람의 지혜나 의견이 문제 해결에 도움이 됨",
+      "example_sentence": "어려운 일이 생기면 노마지지를 빌려 선배에게 조언을 구한다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 24,
+      "hanja": "竹馬故友",
+      "hangul": "죽마고우",
+      "meaning": "대나무 말을 타고 놀던 옛 친구라는 뜻으로, 어릴 때부터 같이 놀며 자란 친한 친구",
+      "example_sentence": "우리는 죽마고우로 30년 우정을 이어왔다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 25,
+      "hanja": "錦上添花",
+      "hangul": "금상첨화",
+      "meaning": "비단 위에 꽃을 더한다는 뜻으로, 좋은 일 위에 또 좋은 일이 더하여짐",
+      "example_sentence": "승진에 이어 포상까지 받아 금상첨화였다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 26,
+      "hanja": "雪上加霜",
+      "hangul": "설상가상",
+      "meaning": "눈 위에 서리가 더한다는 뜻으로, 난처한 일이나 불행한 일이 잇따라 일어남",
+      "example_sentence": "사업 실패에 건강까지 나빠져 설상가상이었다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 27,
+      "hanja": "十匙一飯",
+      "hangul": "십시일반",
+      "meaning": "열 사람이 한 숟가락씩 보태면 한 사람 먹을 밥이 된다는 뜻으로, 여러 사람이 조금씩 힘을 합치면 한 사람을 돕기 쉬움",
+      "example_sentence": "십시일반으로 모금하여 이웃을 도왔다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 28,
+      "hanja": "畵龍點睛",
+      "hangul": "화룡점정",
+      "meaning": "용을 그리고 마지막으로 눈동자를 그려 넣는다는 뜻으로, 가장 요긴한 부분을 완성하여 일을 끝냄",
+      "example_sentence": "마지막 장면이 화룡점정으로 영화를 완성시켰다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 29,
+      "hanja": "龍頭蛇尾",
+      "hangul": "용두사미",
+      "meaning": "용의 머리에 뱀의 꼬리라는 뜻으로, 처음은 거창하나 끝이 보잘것없음",
+      "example_sentence": "그 프로젝트는 용두사미로 끝났다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 30,
+      "hanja": "傍若無人",
+      "hangul": "방약무인",
+      "meaning": "곁에 사람이 없는 것처럼 함부로 말하거나 행동함",
+      "example_sentence": "그는 방약무인한 태도로 주위 사람들의 눈살을 찌푸리게 했다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 31,
+      "hanja": "切磋琢磨",
+      "hangul": "절차탁마",
+      "meaning": "옥이나 뼈를 자르고 갈고 쪼고 간다는 뜻으로, 학문이나 덕행을 부지런히 닦고 연마함",
+      "example_sentence": "학생들은 절차탁마하며 실력을 키워나갔다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 32,
+      "hanja": "望雲之情",
+      "hangul": "망운지정",
+      "meaning": "구름을 바라보는 심정이라는 뜻으로, 고향에 계신 부모를 그리워하는 마음",
+      "example_sentence": "타국 생활이 길어지자 망운지정이 깊어졌다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 33,
+      "hanja": "走馬加鞭",
+      "hangul": "주마가편",
+      "meaning": "달리는 말에 채찍질한다는 뜻으로, 잘하는 사람을 더욱 격려하여 더 잘하게 함",
+      "example_specification": "우수한 학생에게 주마가편으로 더 높은 목표를 제시했다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 34,
+      "hanja": "他山之石",
+      "hangul": "타산지석",
+      "meaning": "다른 산의 돌이라는 뜻으로, 다른 사람의 하찮은 언행도 자신의 지식과 인격을 닦는 데 도움이 됨",
+      "example_sentence": "경쟁사의 실패를 타산지석으로 삼아 같은 실수를 피했다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 35,
+      "hanja": "漁父之利",
+      "hangul": "어부지리",
+      "meaning": "두 사람이 이해관계로 다투는 사이에 제3자가 애쓰지 않고 이익을 봄",
+      "example_sentence": "양 진영이 싸우는 동안 무소속 후보가 어부지리로 당선되었다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 36,
+      "hanja": "溫故知新",
+      "hangul": "온고지신",
+      "meaning": "옛것을 익히고 그것을 미루어서 새것을 앎",
+      "example_sentence": "역사를 공부하며 온고지신의 자세로 현재를 성찰했다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 37,
+      "hanja": "井中之蛙",
+      "hangul": "정중지와",
+      "meaning": "우물 안 개구리라는 뜻으로, 견문이 좁아 세상 형편을 모르는 사람",
+      "example_sentence": "좁은 시야로 세상을 보는 것은 정중지와와 같다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 38,
+      "hanja": "曲學阿世",
+      "hangul": "곡학아세",
+      "meaning": "진리를 굽혀 세상 사람에게 아첨함",
+      "example_sentence": "학자로서 곡학아세하는 것은 부끄러운 일이다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 39,
+      "hanja": "大器晩成",
+      "hangul": "대기만성",
+      "meaning": "큰 그릇을 만드는 데는 시간이 오래 걸린다는 뜻으로, 크게 될 인물은 늦게 이루어짐",
+      "example_sentence": "그는 대기만성형으로 40대에 성공했다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 40,
+      "hanja": "明鏡止水",
+      "hangul": "명경지수",
+      "meaning": "맑은 거울과 고요한 물이라는 뜻으로, 잡념이 없이 맑고 깨끗한 심경",
+      "example_sentence": "명경지수와 같은 마음으로 명상에 집중했다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 41,
+      "hanja": "五里霧中",
+      "hangul": "오리무중",
+      "meaning": "오 리나 되는 짙은 안개 속이라는 뜻으로, 무슨 일에 대하여 방향이나 갈피를 잡을 수 없음",
+      "example_sentence": "사건의 진상은 아직 오리무중이다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 42,
+      "hanja": "改過遷善",
+      "hangul": "개과천선",
+      "meaning": "지난날의 잘못이나 허물을 고쳐 착하게 됨",
+      "example_sentence": "그는 감옥에서 나온 후 개과천선하여 성실하게 살았다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 43,
+      "hanja": "吳越同舟",
+      "hangul": "오월동주",
+      "meaning": "서로 적대시하던 사람들이 어려운 처지에서 함께 협력함",
+      "example_sentence": "위기 상황에서 경쟁사들이 오월동주로 협력했다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 44,
+      "hanja": "刻骨難忘",
+      "hangul": "각골난망",
+      "meaning": "은혜가 뼈에 사무쳐 잊을 수 없음",
+      "example_sentence": "선생님의 가르침은 각골난망할 것입니다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 45,
+      "hanja": "結草報恩",
+      "hangul": "결초보은",
+      "meaning": "죽어서라도 은혜를 잊지 않고 갚음",
+      "example_sentence": "당신의 은혜는 결초보은하겠습니다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 46,
+      "hanja": "權謀術數",
+      "hangul": "권모술수",
+      "meaning": "목적을 이루기 위해 쓰는 온갖 꾀와 수단",
+      "example_sentence": "권모술수를 부려 출세하려는 것은 바람직하지 않다.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 47,
+      "hanja": "近墨者黑",
+      "hangul": "근묵자흑",
+      "meaning": "먹을 가까이하는 사람은 검어진다는 뜻으로, 나쁜 사람과 사귀면 나쁜 버릇에 물들기 쉬움",
+      "example_sentence": "근묵자흑이라고 나쁜 친구들과 어울리지 마라.",
+      "base_difficulty": "MEDIUM"
+    },
+    {
+      "idiom_id": 48,
+      "hanja": "居安思危",
+      "hangul": "거안사위",
+      "meaning": "편안할 때 위태로움을 생각함. 평안할 때에 닥쳐올지 모르는 어려움을 미리 생각하여 대비함",
+      "example_sentence": "기업은 거안사위의 자세로 위기에 대비해야 한다.",
+      "base_difficulty": "HARD"
+    },
+    {
+      "idiom_id": 49,
+      "hanja": "孤軍奮鬪",
+      "hangul": "고군분투",
+      "meaning": "도와주는 사람 없이 혼자 힘으로 어려움과 싸워 애씀",
+      "example_sentence": "그는 고군분투하며 사업을 일으켰다.",
+      "base_difficulty": "EASY"
+    },
+    {
+      "idiom_id": 50,
+      "hanja": "苦肉之策",
+      "hangul": "고육지책",
+      "meaning": "자기 몸을 괴롭게 하는 계책이라는 뜻으로, 어려운 일을 타개하기 위하여 부득이 취하는 수단",
+      "example_sentence": "직원 감축은 회사를 살리기 위한 고육지책이었다.",
+      "base_difficulty": "HARD"
+    }
+  ],
+  "metadata": {
+    "total_count": 50,
+    "version": "1.0",
+    "last_updated": "2025-11-14",
+    "difficulty_distribution": {
+      "EASY": 16,
+      "MEDIUM": 16,
+      "HARD": 18
+    },
+    "description": "사자성어 학습 프로그램을 위한 기본 데이터셋 (50개 샘플)"
+  }
+}
