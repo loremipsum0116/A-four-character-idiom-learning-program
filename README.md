@@ -157,7 +157,7 @@ Damage_Taken = Base_Boss_Damage * Defense_Multiplier
 
 ## 라이선스
 
-MIT License
+GPL-3.0 license
 
 ## 작성자
 
