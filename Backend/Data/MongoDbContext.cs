@@ -17,6 +17,8 @@ namespace IdiomLearningAPI.Data
             _database = client.GetDatabase(databaseName);
         }
 
+        public IMongoDatabase Database => _database;
+
         public IMongoCollection<User> Users => _database.GetCollection<User>("users");
         public IMongoCollection<Idiom> Idioms => _database.GetCollection<Idiom>("idioms");
         public IMongoCollection<GameStage> GameStages => _database.GetCollection<GameStage>("game_stages");

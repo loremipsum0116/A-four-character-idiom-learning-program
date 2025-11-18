@@ -33,5 +33,11 @@ namespace IdiomLearningAPI.Models
 
         [BsonElement("description")]
         public string Description { get; set; } = string.Empty;
+
+        [BsonElement("emoji")]
+        public string Emoji { get; set; } = string.Empty;
+
+        [BsonElement("required_difficulty")]
+        public Difficulty RequiredDifficulty { get; set; }
     }
 }

@@ -49,9 +49,11 @@ builder.Services.AddSwaggerGen(c =>
 
 // MongoDB Context
 builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddSingleton(sp => sp.GetRequiredService<MongoDbContext>().Database);
 
 // Services
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<DataSeeder>();
 
 // CORS
 builder.Services.AddCors(options =>
@@ -101,5 +103,45 @@ app.MapControllers();
 
 // Health check endpoint
 app.MapGet("/api/health", () => new { status = "OK", message = "Server is running" });
+
+// Data seeding endpoint (Development only)
+app.MapPost("/api/seed/all", async (DataSeeder seeder) =>
+{
+    try
+    {
+        await seeder.SeedAllAsync();
+        return Results.Ok(new { message = "데이터 초기화가 완료되었습니다." });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(detail: ex.Message, statusCode: 500);
+    }
+});
+
+app.MapPost("/api/seed/idioms", async (DataSeeder seeder) =>
+{
+    try
+    {
+        await seeder.SeedIdiomsAsync();
+        return Results.Ok(new { message = "사자성어 데이터 초기화가 완료되었습니다." });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(detail: ex.Message, statusCode: 500);
+    }
+});
+
+app.MapPost("/api/seed/stages", async (DataSeeder seeder) =>
+{
+    try
+    {
+        await seeder.SeedGameStagesAsync();
+        return Results.Ok(new { message = "스테이지 데이터 초기화가 완료되었습니다." });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(detail: ex.Message, statusCode: 500);
+    }
+});
 
 app.Run();

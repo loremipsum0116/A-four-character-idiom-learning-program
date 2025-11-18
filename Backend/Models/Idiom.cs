@@ -30,6 +30,12 @@ namespace IdiomLearningAPI.Models
 
         [BsonElement("base_difficulty")]
         public Difficulty BaseDifficulty { get; set; }
+
+        [BsonElement("category")]
+        public string Category { get; set; } = string.Empty;
+
+        [BsonElement("created_at")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
     public enum Difficulty
