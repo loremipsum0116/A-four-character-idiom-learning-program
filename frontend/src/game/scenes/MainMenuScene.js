@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { clearGuestData } from '../../utils/storageManager.js';
+import { initGesture } from '../../gesture.js';
 
 /**
  * MainMenuScene - 메인 메뉴
@@ -124,12 +125,19 @@ export default class MainMenuScene extends Phaser.Scene {
   }
 
   onButtonClick(sceneName) {
-    if (!sceneName) {
+    if(!sceneName) {
       console.log('⚙️ 설정 기능은 준비 중입니다');
       return;
     }
 
     console.log(`🎮 ${sceneName}으로 이동`);
+
+    // 학습 모드와 게임 모드에서만 Gesture 초기화
+    if(sceneName === 'LearningModeScene' || sceneName === 'StageSelectScene') {
+      const container = document.getElementById('game-container');
+      initGesture(container);
+    }
+
     this.scene.start(sceneName);
   }
 
