@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+vhpppCutHA=",
+  "dgSpecHash": "6xgjALJ6q2g=",
   "success": false,
-  "projectFilePath": "/Users/m1/Desktop/n/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
+  "projectFilePath": "/Users/m1/Desktop/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
   "expectedPackageFiles": [
     "/Users/m1/.nuget/packages/awssdk.core/3.7.100.14/awssdk.core.3.7.100.14.nupkg.sha512",
     "/Users/m1/.nuget/packages/awssdk.securitytoken/3.7.100.14/awssdk.securitytoken.3.7.100.14.nupkg.sha512",
@@ -84,9 +84,9 @@
       "code": "NU1902",
       "level": "Warning",
       "message": "Package 'System.IdentityModel.Tokens.Jwt' 7.0.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
-      "projectPath": "/Users/m1/Desktop/n/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
+      "projectPath": "/Users/m1/Desktop/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
       "warningLevel": 1,
-      "filePath": "/Users/m1/Desktop/n/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
+      "filePath": "/Users/m1/Desktop/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
       "libraryId": "System.IdentityModel.Tokens.Jwt",
       "targetGraphs": [
         "net8.0"
@@ -96,8 +96,8 @@
       "code": "NU1605",
       "level": "Error",
       "message": "Warning As Error: Detected package downgrade: System.IdentityModel.Tokens.Jwt from 7.0.3 to 7.0.0. Reference the package directly from the project to select a different version. \n IdiomLearningAPI -> Microsoft.AspNetCore.Authentication.JwtBearer 8.0.0 -> Microsoft.IdentityModel.Protocols.OpenIdConnect 7.0.3 -> System.IdentityModel.Tokens.Jwt (>= 7.0.3) \n IdiomLearningAPI -> System.IdentityModel.Tokens.Jwt (>= 7.0.0)",
-      "projectPath": "/Users/m1/Desktop/n/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
-      "filePath": "/Users/m1/Desktop/n/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
+      "projectPath": "/Users/m1/Desktop/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
+      "filePath": "/Users/m1/Desktop/A-four-character-idiom-learning-program/Backend/IdiomLearningAPI.csproj",
       "libraryId": "System.IdentityModel.Tokens.Jwt",
       "targetGraphs": [
         "net8.0"
