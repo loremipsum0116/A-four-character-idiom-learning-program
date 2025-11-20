@@ -14,6 +14,7 @@ import PvPScene from './scenes/PvPScene.js';
 import FillBlankScene from './scenes/FillBlankScene.js';
 import DifficultySelectScene from './scenes/DifficultySelectScene.js';
 import CardMatchScene from './scenes/CardMatchScene.js';
+import BookScene from './scenes/BookScene.js';
 
 
 
@@ -48,6 +49,7 @@ export const gameConfig = {
     DifficultySelectScene,
     CardMatchScene,
     FillBlankScene,
+    BookScene,
     StageSelectScene, // FR 4.1 - 스테이지 선택
     BattleScene,      // FR 4.0 - 턴제 전투 (핵심)
     StatisticsScene,  // FR 6.0 - 통계

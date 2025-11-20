@@ -1,11 +1,5 @@
 import Phaser from 'phaser';
 
-/**
- * LearningModeScene - 학습 모드 선택 화면
- * FR 3.0: 학습 모드 (선택 화면)
- * FR 3.2: 빈칸 맞추기 → DifficultySelectScene → FillBlankScene
- * FR 3.3: 카드 매칭 (CardMatchScene으로 연결)
- */
 export default class LearningModeScene extends Phaser.Scene {
   constructor() {
     super({ key: 'LearningModeScene' });
@@ -31,20 +25,28 @@ export default class LearningModeScene extends Phaser.Scene {
     // ------------------------------------
 
     // 빈칸 맞추기
-  this.createModeButton(
-      width / 2 - 160, 
-    height / 2,
-    '📝 빈칸 맞추기',
-    { targetScene: 'FillBlankScene' }
-  );
+    this.createModeButton(
+      width / 2 - 320, 
+      height / 2,
+      '📝 빈칸 맞추기',
+      { targetScene: 'FillBlankScene' }
+    );
 
-  // 카드 매칭
-  this.createModeButton(
-    width / 2 + 160, 
-    height / 2,
-    '🃏 카드 매칭',
-    { targetScene: 'CardMatchScene' }
-  );
+    // 카드 매칭
+    this.createModeButton(
+      width / 2, 
+      height / 2,
+      '🃏 카드 매칭',
+      { targetScene: 'CardMatchScene' }
+    );
+
+    // 사자성어 학습하기 
+    this.createModeButton(
+      width / 2 + 320, 
+      height / 2,
+      '사자성어 단어장',
+      { targetScene: 'BookScene' }
+    );
 
 
     // ------------------------------------
@@ -57,7 +59,7 @@ export default class LearningModeScene extends Phaser.Scene {
       .on('pointerdown', () => this.scene.start('MainMenuScene'))
       .on('pointerover', () => backBtn.setColor('#ffffff'))
       .on('pointerout', () => backBtn.setColor('#94a3b8'));
-  }
+    }
 
   /**
    * 학습 모드 선택 버튼 생성

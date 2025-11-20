@@ -79,10 +79,9 @@ export default class CardMatchGame extends Phaser.Scene {
         if (this.allCards) this.allCards.forEach(c => c.destroy());
         this.allCards = [];
         
-        // **추가:** 전체 문제 풀 저장소 초기화
         this.fullIdiomPool = []; 
-        this.totalPairs = 10; // 전체 문제 수 10쌍으로 설정
-        this.pairsToShow = 5; // 한 화면에 보여줄 문제 수 5쌍으로 설정
+        this.totalPairs = 10; 
+        this.pairsToShow = 5; 
     }
 
     preload() {
@@ -98,12 +97,12 @@ export default class CardMatchGame extends Phaser.Scene {
         // UI
         this.scoreLabel = this.add.text(WIDTH - 150, headerY, '⭐ 0', fontConfig);
         this.livesLabel = this.add.text(WIDTH - 150, headerY + 30, '❤️ 3', fontConfig);
-        this.feedbackText = this.add.text(WIDTH / 2, 80, "카드를 두 장 선택하세요.", { fontSize: "28px", color: "#fbbf24" }).setOrigin(0.5);
+        this.feedbackText = this.add.text(WIDTH / WIDTH - 150, 80, "카드를 두 장 선택하세요.", { fontSize: "28px", color: "#fbbf24" }).setOrigin(0.5);
 
-        this.questionCountText = this.add.text(20, headerY + 30, `문제 0/5`, fontConfig);
+        this.questionCountText = this.add.text(20, headerY + 60, `문제 0/5`, fontConfig);
 
         // 뒤로가기
-        this.add.text(20, HEIGHT - 60, '← 뒤로', {
+        this.add.text(20, 20, '← 뒤로', {
             fontSize: '20px',
             color: '#94a3b8'
         }).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
@@ -148,7 +147,7 @@ export default class CardMatchGame extends Phaser.Scene {
         const startY = 200; 
         const spacingY = 100; 
 
-        // 1. 좌측 카드 배치 (세로 배열)
+        //좌측 카드
         leftCardsData.forEach((data, idx) => {
             const x = startX_Left; 
             const y = startY + idx * spacingY; 
@@ -158,7 +157,7 @@ export default class CardMatchGame extends Phaser.Scene {
             this.allCards.push(card);
         });
 
-        // 2. 우측 카드 배치 (세로 배열)
+        //우측 카드
         rightCardsData.forEach((data, idx) => {
             const x = startX_Right; 
             const y = startY + idx * spacingY; 
@@ -170,12 +169,12 @@ export default class CardMatchGame extends Phaser.Scene {
     }
 
     onCardSelected(card) {
-    // 이미 매칭된 카드면 무시
+    //이미 매칭된 카드면 무시
     if (card.isMatched) return;
 
-    // 이미 선택된 카드 클릭 → 선택 취소 가능
+    //선택 취소 기능
     if (card.isSelected) {
-        // 방금 선택한 카드인지 확인
+       
         if (this.selectedCards.includes(card)) {
             card.setSelected(false);
             this.selectedCards = this.selectedCards.filter(c => c !== card);
@@ -183,17 +182,17 @@ export default class CardMatchGame extends Phaser.Scene {
         return;
     }
 
-    // 이미 다른 카드 한 장 선택된 상태라면 타입 체크
+    //이미 다른 카드 한 장 선택된 상태라면 타입 체크
     if (this.selectedCards.length === 1) {
         const firstCard = this.selectedCards[0];
 
-        // 같은 타입 카드 선택 → 안내 메시지
+        //같은 타입 카드 선택 → 안내 메시지
         if (firstCard.type === card.type) {
             firstCard.setSelected(false);           // 이전 카드 선택 취소
             this.selectedCards = [];                // 선택 배열 초기화
             this.feedbackText.setText('같은 타입 카드입니다. 다시 선택하세요.').setColor('#facc15');
 
-            // 10초 뒤 안내 텍스트 사라짐
+            //10초 뒤 안내 텍스트 사라짐
             this.time.delayedCall(10000, () => {
                 this.feedbackText.setText('');
             });
@@ -201,11 +200,11 @@ export default class CardMatchGame extends Phaser.Scene {
         }
     }
 
-    // 카드 선택
+    //카드 선택
     card.setSelected(true);
     this.selectedCards.push(card);
 
-    // 두 장 선택되면 매칭 체크
+    //두 장 선택되면 매칭 체크
     if (this.selectedCards.length === 2) {
         this.time.delayedCall(500, () => this.checkMatch());
     }
@@ -243,7 +242,6 @@ export default class CardMatchGame extends Phaser.Scene {
     const livesDisplay = '❤️'.repeat(this.lives) + '🤍'.repeat(this.maxLives - this.lives);
     this.livesLabel.setText(`목숨 ${livesDisplay}`);
 
-    // **수정:** 현재 단계의 문제 수 (5) 대신 전체 문제 수 (10)를 기준으로 표시
     const totalMatchedPairs = this.totalPairs - this.fullIdiomPool.length;
     this.questionCountText.setText(`문제 ${totalMatchedPairs}/${this.totalPairs}`);
 }
@@ -255,26 +253,24 @@ export default class CardMatchGame extends Phaser.Scene {
 
         if (allMatchedOnScreen) {
             
-            // 현재 화면의 5쌍이 매칭 완료되면, 사용된 5쌍을 풀에서 제거
             this.fullIdiomPool.splice(0, this.pairsToShow);
             
-            // 다음 5쌍이 남아 있는지 확인
             if (this.fullIdiomPool.length > 0) {
-                // 다음 5쌍으로 넘어감
+
                 this.feedbackText.setText(`👍 5쌍 완료! 다음 라운드 시작!`).setColor('#7dd3fc');
                 this.time.delayedCall(1500, () => {
-                    this.allCards.forEach(c => c.destroy()); // 기존 카드 제거
+                    this.allCards.forEach(c => c.destroy()); 
                     this.allCards = [];
-                    this.currentQuestion = 0; // 카드 선택 횟수 리셋
-                    this.updateUI(); // UI 업데이트 (문제수)
-                    this.generateCards(); // 새로운 5쌍 생성
+                    this.currentQuestion = 0; 
+                    this.updateUI(); 
+                    this.generateCards(); 
                     this.feedbackText.setText('');
                 });
                 return; 
             }
         }
 
-        // 전체 10쌍 완료 또는 게임 오버
+        //전체 10쌍 완료 또는 게임 오버
         if (this.fullIdiomPool.length === 0 || gameOver) {
             const allMatched = (this.fullIdiomPool.length === 0);
             

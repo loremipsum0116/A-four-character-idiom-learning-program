@@ -86,11 +86,6 @@ export default class FillBlankScene extends Phaser.Scene {
         const requiredDifficulty = DIFFICULTY_MAP[this.difficulty];
         let filteredIdioms = IDIOMS_DATA.filter(idiom => idiom.difficulty === requiredDifficulty);
 
-        if (filteredIdioms.length === 0) {
-            this.feedbackText.setText(`데이터 로드 실패: 난이도 '${this.difficulty}' 데이터가 없습니다.`);
-            return;
-        }
-
         this._idiomPool = Phaser.Utils.Array.Shuffle(filteredIdioms);
         this.maxQuestions = Math.min(this.maxQuestions, this._idiomPool.length); 
         
@@ -101,7 +96,6 @@ export default class FillBlankScene extends Phaser.Scene {
         
 
         if (this._currentQuestionNumber >= this.maxQuestions || this._idiomPool.length === 0) {
-            // 바로 endGame 호출하지 말고 allMatched/gameOver처럼 처리
             const allQuestionsDone = this._currentQuestionNumber >= this.maxQuestions;
             const gameOver = this._currentLives <= 0;
 
@@ -145,7 +139,7 @@ export default class FillBlankScene extends Phaser.Scene {
         this.feedbackText.setText('').setVisible(false);
         this.questionCountText.setText(`문제 ${this._currentQuestionNumber}/${this.maxQuestions}`);
 
-        // 힌트 버튼 초기화
+        //힌트 버튼
         if (this.hintButton) {
             if (this.difficulty === 'EASY') {
                 this.hintButton.setVisible(true).setAlpha(1).setInteractive(true);
@@ -261,7 +255,7 @@ export default class FillBlankScene extends Phaser.Scene {
         if (this._hintUsed) return;
         this._hintUsed = true;
 
-        // EASY 난이도는 패널티 없음
+        //EASY 난이도는 패널티 없음
         if (this.difficulty !== 'EASY') {
             this._currentScore = Math.max(0, this._currentScore - this.hintPenalty);
         }
@@ -281,7 +275,7 @@ export default class FillBlankScene extends Phaser.Scene {
         if (this.hintButton) this.hintButton.removeAllListeners();
         if (this.hintButton) this.hintButton.setVisible(false);
     
-        // 난이도 선택 씬으로 이동
+        //난이도 선택 씬으로 이동
         this.time.delayedCall(500, () => {
             this.scene.start('DifficultySelectScene', { finalScore: this._currentScore });
         });
@@ -305,8 +299,8 @@ export default class FillBlankScene extends Phaser.Scene {
         this.livesLabel = this.add.text(width - 150, headerY + 30, '❤️ 5', fontConfig);
 
         const difficultyLabel = this.difficulty === 'EASY' ? '초급' : this.difficulty === 'MEDIUM' ? '중급' : '고급';
-        this.levelText = this.add.text(20, headerY, `레벨 ${difficultyLabel}`, fontConfig);
-        this.questionCountText = this.add.text(20, headerY + 30, `문제 0/${this.maxQuestions}`, fontConfig);
+        this.levelText = this.add.text(width - 150, headerY + 60, `레벨 ${difficultyLabel}`, fontConfig);
+        this.questionCountText = this.add.text(width - 150, headerY + 90, `문제 0/${this.maxQuestions}`, fontConfig);
 
         this.timerText = this.add.text(width / 2, 140, `남은 시간: ${this.maxTime}초`, { 
             fontSize: '28px', 
@@ -340,7 +334,7 @@ export default class FillBlankScene extends Phaser.Scene {
 
         this.createChoiceButtons();
 
-        // 힌트 버튼 (초급에서만 표시, 뒤로가기와 겹치지 않도록 위치 조정)
+        //힌트 버튼 (초급만)
         if (this.difficulty === 'EASY') {
             this.hintButton = this.add.text(120, height - 60, '💡 힌트 보기', {
                 fontSize: '20px',
@@ -348,7 +342,7 @@ export default class FillBlankScene extends Phaser.Scene {
             }).setInteractive({ useHandCursor: true }).on('pointerdown', () => this.showHint());
         }
 
-        this.add.text(20, height - 60, '← 뒤로', {
+        this.add.text(20, 20, '← 뒤로',{
         fontSize: '20px',
         color: '#94a3b8'
     })
