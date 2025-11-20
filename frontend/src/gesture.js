@@ -134,3 +134,28 @@ function detectLoop() {
   }
   requestAnimationFrame(detectLoop);
 }
+
+export function removeGesture() {
+  const elementsToRemove = [video, canvas, statusDiv];
+  
+  // 비디오 스트림 정지
+  if (video && video.srcObject) {
+    const tracks = video.srcObject.getTracks();
+    tracks.forEach(track => track.stop());
+    video.srcObject = null;
+  }
+  
+  // DOM에서 요소 제거
+  elementsToRemove.forEach(el => {
+    if (el && el.parentNode) {
+      el.parentNode.removeChild(el);
+    }
+  });
+  
+  // 전역 변수 초기화
+  video = null;
+  canvas = null;
+  statusDiv = null;
+  // handLandmarker = null; // 필요에 따라 모델도 해제
+  console.log('✋ 제스처 카메라 비활성화 및 제거 완료.');
+}

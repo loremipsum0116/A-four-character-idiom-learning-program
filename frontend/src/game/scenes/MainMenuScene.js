@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { clearGuestData } from '../../utils/storageManager.js';
-import { initGesture } from '../../gesture.js';
+// 💡 [수정] removeGesture 함수를 새로 import 합니다.
+import { initGesture, removeGesture } from '../../gesture.js';
 
 /**
  * MainMenuScene - 메인 메뉴
@@ -26,6 +27,12 @@ export default class MainMenuScene extends Phaser.Scene {
 
     // 배경
     this.add.rectangle(width / 2, height / 2, width, height, 0x2d3561);
+
+    // 💡 [추가] 메인 메뉴 진입 시 제스처 카메라 비활성화/제거
+    // MainMenuScene은 제스처를 사용하지 않으므로, 화면에 남겨진 카메라 UI를 제거합니다.
+    if (typeof removeGesture === 'function') {
+      removeGesture();
+    }
 
     // 타이틀
     this.add.text(width / 2, 80, '🦁 사자의 역습', {
@@ -132,7 +139,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
     console.log(`🎮 ${sceneName}으로 이동`);
 
-    // 학습 모드와 게임 모드에서만 Gesture 초기화
+    // 학습 모드와 게임 모드에서만 Gesture 초기화 (이 로직은 그대로 유지)
     if(sceneName === 'LearningModeScene' || sceneName === 'StageSelectScene') {
       const container = document.getElementById('game-container');
       initGesture(container);
@@ -145,6 +152,12 @@ export default class MainMenuScene extends Phaser.Scene {
     console.log('🚪 로그아웃');
     // 게스트 데이터 삭제 (게스트 모드인 경우)
     clearGuestData();
+    
+    // 💡 [추가] 로그아웃 후 LoginScene으로 이동 시 제스처 카메라 비활성화/제거
+    if (typeof removeGesture === 'function') {
+      removeGesture();
+    }
+    
     this.scene.start('LoginScene');
   }
 }
