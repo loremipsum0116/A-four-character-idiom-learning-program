@@ -12,15 +12,19 @@ export async function initGesture(parent = document.body) {
     video.autoplay = true;
     video.muted = true;
     video.playsInline = true;
+    // ⭐️ 변경: 비디오 요소를 화면에서 숨깁니다.
+    // 캔버스만 보이도록 투명도와 포인터 이벤트를 제거하고 z-index를 낮춥니다.
     video.style.position = 'absolute';
     video.style.top = '20px';
     video.style.left = '50%';
     video.style.transform = 'translateX(-50%)';
     video.style.width = '320px';
     video.style.height = '240px';
-    video.style.border = '2px solid white';
+    video.style.border = 'none'; // 테두리 제거
+    video.style.opacity = '0'; // ⭐️ 투명하게 만듭니다.
+    video.style.pointerEvents = 'none'; // 마우스 이벤트 차단
     video.style.borderRadius = '8px';
-    video.style.zIndex = '10';
+    video.style.zIndex = '9'; // 캔버스(z-index: 11) 아래로 배치
     parent.appendChild(video);
 
     canvas = document.createElement('canvas');
@@ -31,6 +35,9 @@ export async function initGesture(parent = document.body) {
     canvas.style.top = '20px';
     canvas.style.left = '50%';
     canvas.style.transform = 'translateX(-50%)';
+    // 캔버스에 테두리를 추가하여 영역을 표시할 수 있습니다.
+    canvas.style.border = '2px solid white';
+    canvas.style.borderRadius = '8px';
     canvas.style.zIndex = '11';
     parent.appendChild(canvas);
 
@@ -115,10 +122,11 @@ function recognize(lm) {
 function detectLoop() {
   if(!handLandmarker) return;
   const results = handLandmarker.detectForVideo(video, performance.now());
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // 캔버스 클리어 (랜드마크만 유지)
 
   if(results && results.landmarks && results.landmarks[0]) {
     const lm = results.landmarks[0];
+    // ⭐️ 이 부분이 손 랜드마크를 그리는 코드이므로, 이 부분을 유지합니다.
     lm.forEach(p=>{
       ctx.beginPath();
       ctx.arc(p.x*canvas.width, p.y*canvas.height, 6,0,2*Math.PI);
