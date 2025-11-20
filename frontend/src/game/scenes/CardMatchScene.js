@@ -63,7 +63,7 @@ export default class CardMatchGame extends Phaser.Scene {
     maxTime = 50;
 
     constructor() {
-        super({ key: "CardMatchGame" });
+        super({ key: "CardMatchScene" }); 
     }
 
     init(data) {
