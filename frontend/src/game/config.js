@@ -5,16 +5,16 @@ import BootScene from './scenes/BootScene.js';
 import LoginScene from './scenes/LoginScene.js';
 import IntroScene from './scenes/IntroScene.js';
 import MainMenuScene from './scenes/MainMenuScene.js';
-import LearningModeScene from './scenes/LearningModeScene.js';
+import LearningModeScene from './scenes/learning/LearningModeScene.js';
 import StageSelectScene from './scenes/StageSelectScene.js';
 import BattleScene from './scenes/BattleScene.js';
 import StatisticsScene from './scenes/StatisticsScene.js';
 import EndingScene from './scenes/EndingScene.js';
 import PvPScene from './scenes/PvPScene.js';
-import FillBlankScene from './scenes/FillBlankScene.js';
-import DifficultySelectScene from './scenes/DifficultySelectScene.js';
-import CardMatchScene from './scenes/CardMatchScene.js';
-import BookScene from './scenes/BookScene.js';
+import FillBlankScene from './scenes/learning/FillBlankScene.js';
+import DifficultySelectScene from './scenes/learning/DifficultySelectScene.js';
+import CardMatchScene from './scenes/learning/CardMatchScene.js';
+import BookScene from './scenes/learning/BookScene.js';
 
 
 

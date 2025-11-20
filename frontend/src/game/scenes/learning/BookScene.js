@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { idioms } from '../../data/idioms.js'; 
+import { idioms } from '../../../data/idioms.js'; 
 
 const WIDTH = 1280;
 const HEIGHT = 720;

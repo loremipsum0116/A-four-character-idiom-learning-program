@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { idioms } from '../../data/idioms.js';
+import { idioms } from '../../../data/idioms.js';
 
 const WIDTH = 1280;
 const HEIGHT = 720;
@@ -21,7 +21,7 @@ export class Card {
         this.isMatched = false;
 
         this.rect = scene.add.rectangle(x, y, 400, 80, 0x475569).setStrokeStyle(2, 0x000);
-        this.text = scene.add.text(x, y, content, { fontSize: "20px", color: "#ffffff", align: "center", wordWrap: { width: 200 } }).setOrigin(0.5);
+        this.text = scene.add.text(x, y, content, { fontSize: "20px", color: "#ffffff", align: "center", wordWrap: { width: 350 } }).setOrigin(0.5);
 
         this.rect.setInteractive({ useHandCursor: true });
         this.rect.on("pointerup", () => this.handleClick());
@@ -97,7 +97,7 @@ export default class CardMatchGame extends Phaser.Scene {
         // UI
         this.scoreLabel = this.add.text(WIDTH - 150, headerY, '⭐ 0', fontConfig);
         this.livesLabel = this.add.text(WIDTH - 150, headerY + 30, '❤️ 3', fontConfig);
-        this.feedbackText = this.add.text(WIDTH / WIDTH - 150, 80, "카드를 두 장 선택하세요.", { fontSize: "28px", color: "#fbbf24" }).setOrigin(0.5);
+        this.feedbackText = this.add.text(WIDTH / 2, 80, "카드를 두 장 선택하세요.", { fontSize: "28px", color: "#fbbf24" }).setOrigin(0.5);
 
         this.questionCountText = this.add.text(20, headerY + 60, `문제 0/5`, fontConfig);
 
@@ -116,24 +116,20 @@ export default class CardMatchGame extends Phaser.Scene {
     }
 
     generateCards() {
-        // **수정 1: 전체 문제 10쌍 선택**
         const pairCount = this.totalPairs; 
-        
-        // 난이도에 맞는 전체 사자성어 중 10개를 무작위로 선택하여 fullIdiomPool에 저장
+
         if (this.fullIdiomPool.length === 0) {
             const idiomPool = idioms.filter(i => i.difficulty === this.difficulty);
             Phaser.Utils.Array.Shuffle(idiomPool);
             this.fullIdiomPool = idiomPool.slice(0, pairCount);
         }
 
-        // **수정 2: 매번 5쌍만 섞어 보여주기**
         const selectedIdioms = this.fullIdiomPool.slice(0, this.pairsToShow);
 
         const leftCardsData = [];
         const rightCardsData = [];
 
         selectedIdioms.forEach(idiom => {
-            // 사자성어와 뜻을 올바른 pairId로 연결
             leftCardsData.push({ content: `${idiom.hangul}\n${idiom.hanja.join('')}`, pairId: idiom.idiomId });
             rightCardsData.push({ content: idiom.meaning, pairId: idiom.idiomId });
         });
@@ -141,7 +137,6 @@ export default class CardMatchGame extends Phaser.Scene {
         Phaser.Utils.Array.Shuffle(leftCardsData);
         Phaser.Utils.Array.Shuffle(rightCardsData);
         
-        // 기존 배치 로직은 그대로 사용 (5쌍 기준)
         const startX_Left = 300; 
         const startX_Right = WIDTH - 300; 
         const startY = 200; 
@@ -218,8 +213,7 @@ export default class CardMatchGame extends Phaser.Scene {
         card1.setMatched(true);
         card2.setMatched(true);
 
-        // ✅ 각 문제 성공 시 20점씩
-        const earnedScore = 20;
+        const earnedScore = 10;
         this.score += earnedScore;
 
         this.feedbackText.setText(`✅ 매칭 성공! (+${earnedScore}점)`).setColor('#22c55e').setVisible(true);

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { idioms } from '../../data/idioms.js';
+import { idioms } from '../../../data/idioms.js';
 
 const IDIOMS_DATA = idioms; 
 
@@ -211,13 +211,12 @@ export default class FillBlankScene extends Phaser.Scene {
         }, [], this);
     }
 
+    /**
+     * 정답 처리 로직 (수정됨: 무조건 10점 획득)
+     */
     handleCorrectAnswer() {
-        let earnedScore = this.baseScore;
-        if (this._hintUsed) {
-            earnedScore = this.difficulty === 'EASY' ? this.baseScore : 5; 
-        } else {
-            earnedScore += Math.floor(Math.max(0, this._timeRemaining) / 5) * this.timeBonus;
-        }
+        // ⭐ 수정: 무조건 10점을 획득하도록 earnedScore를 baseScore 값(10)으로 고정
+        const earnedScore = this.baseScore; 
         
         this._currentScore += earnedScore;
         this.updateUI();
@@ -251,14 +250,15 @@ export default class FillBlankScene extends Phaser.Scene {
         }, [], this);
     }
 
+    /**
+     * 힌트 표시 로직 (수정됨: 점수 패널티 제거)
+     */
     showHint() {
         if (this._hintUsed) return;
         this._hintUsed = true;
 
-        //EASY 난이도는 패널티 없음
-        if (this.difficulty !== 'EASY') {
-            this._currentScore = Math.max(0, this._currentScore - this.hintPenalty);
-        }
+        // ⭐ 수정: 점수 패널티 로직 제거 (this._currentScore = Math.max(0, this._currentScore - this.hintPenalty);)
+        // 이제 힌트를 사용해도 점수가 차감되지 않습니다.
 
         this.meaningText.setVisible(true); 
         if (this.hintButton) {
