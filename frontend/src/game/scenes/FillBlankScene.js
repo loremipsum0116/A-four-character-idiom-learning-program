@@ -17,7 +17,7 @@ export default class FillBlankScene extends Phaser.Scene {
     timeBonus = 10; 
     hintPenalty = 5; 
     maxTime = 50; 
-    maxQuestions = 5; 
+    maxQuestions = 10; 
 
     _idiomPool = []; 
     _currentIdiom = null; 
@@ -349,16 +349,20 @@ export default class FillBlankScene extends Phaser.Scene {
         }
 
         this.add.text(20, height - 60, '← 뒤로', {
-            fontSize: '20px',
-            color: '#94a3b8'
-        }).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
-            this.time.removeAllEvents();
-            this.choiceButtons.forEach(choice => choice.rect.removeAllListeners());
-            this.choiceButtons = [];
-            if (this.hintButton) this.hintButton.removeAllListeners();
-            this.scene.start('DifficultySelectScene');
-        });
+        fontSize: '20px',
+        color: '#94a3b8'
+    })
+    .setInteractive({ useHandCursor: true })
+    .on('pointerdown', () => {
+        this.time.removeAllEvents();
+        this.choiceButtons.forEach(choice => choice.rect.removeAllListeners());
+        this.choiceButtons = [];
+        if (this.hintButton) this.hintButton.removeAllListeners();
 
+        this.scene.start('DifficultySelectScene', { 
+            targetScene: 'FillBlankScene' 
+        });
+    });
     }
 
     createChoiceButtons() {
