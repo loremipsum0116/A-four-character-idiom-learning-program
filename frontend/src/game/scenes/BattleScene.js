@@ -51,6 +51,11 @@ export default class BattleScene extends Phaser.Scene {
     this.quizStartTime = 0;
     this.isProcessing = false;
 
+    // 🔢 전투 통계
+    this.correctCount = 0;      // 정답 개수
+    this.wrongCount = 0;        // 오답 개수
+    this.battleStartTime = 0;   // 전투 시작 시각(ms)
+
     console.log(`⚔️ 전투 시작:`, this.stageData);
     console.log(`🦁 사자 능력치 - 체력: ${this.playerHP}/${this.playerMaxHP}, 공격 보너스: +${this.lionLevel.attackBonus}%`);
   }
@@ -681,6 +686,11 @@ export default class BattleScene extends Phaser.Scene {
   startPlayerTurn() {
     if (this.isProcessing) return;
 
+    // 전투 시작 시간 기록 (첫 플레이어 턴에서 한 번만)
+    if (this.battleStartTime === 0) {
+          this.battleStartTime = Date.now();
+    }
+
     this.turnPhase = 'SELECT_DIFFICULTY';
     this.showMessage('공격 턴! 난이도를 선택하세요.');
     this.showDifficultySelector();
@@ -954,6 +964,13 @@ export default class BattleScene extends Phaser.Scene {
     // 정답 확인
     const isCorrect = selectedIndex === this.currentQuiz.answer;
 
+    // ✅ 통계 업데이트
+    if (isCorrect) {
+          this.correctCount += 1;
+    } else {
+          this.wrongCount += 1;
+    }
+
     console.log(`📝 답안 제출:`, { selectedIndex, isCorrect, responseTime });
 
     // UI 제거
@@ -1169,7 +1186,14 @@ export default class BattleScene extends Phaser.Scene {
     this.isProcessing = true;
 
     const responseTime = Date.now() - this.quizStartTime;
-    const defenseSuccess = selectedIndex === this.currentQuiz.answer;
+      const defenseSuccess = selectedIndex === this.currentQuiz.answer;
+
+      // ✅ 통계 업데이트 (방어도 정답/오답에 포함)
+      if (defenseSuccess) {
+          this.correctCount += 1;
+      } else {
+          this.wrongCount += 1;
+      }
 
     console.log(`🛡️ 방어 답안:`, { selectedIndex, defenseSuccess, responseTime });
 
@@ -1336,19 +1360,95 @@ export default class BattleScene extends Phaser.Scene {
 
             // FR 4.11: 통계 표시
             this.time.delayedCall(2500, () => {
-              this.scene.start('StageSelectScene');
+                this.showBattleResult(true);
             });
           });
         });
       });
-      this.load.start();
-    } else {
-      // 레벨업 없으면 바로 스테이지 선택으로
-      this.time.delayedCall(2500, () => {
-        this.scene.start('StageSelectScene');
-      });
-    }
+          this.load.start();
+      } else {
+          // 레벨업 없으면 바로 결과창으로
+          this.time.delayedCall(2500, () => {
+              this.showBattleResult(true);
+          });
+      }
   }
+
+    /**
+   * 전투 결과창 표시
+   * @param {boolean} isVictory - 승리 여부
+   */
+    showBattleResult(isVictory) {
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
+
+        // 전체 어두운 오버레이
+        const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6)
+            .setDepth(999)
+            .setInteractive(); // 뒤 클릭 막기
+
+        const panelWidth = width - 200;
+        const panelHeight = 320;
+
+        // 결과 패널
+        const panel = this.add.rectangle(width / 2, height / 2, panelWidth, panelHeight, 0x0f172a, 0.95)
+            .setStrokeStyle(3, isVictory ? 0x4ade80 : 0xf97316)
+            .setDepth(1000);
+
+        const titleText = isVictory ? '전투 결과 - 승리!' : '전투 결과 - 패배';
+        const title = this.add.text(width / 2, height / 2 - panelHeight / 2 + 40, titleText, {
+            fontSize: '28px',
+            color: '#e5e7eb',
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(1001);
+
+        // 걸린 시간 계산
+        let elapsedSec = 0;
+        if (this.battleStartTime) {
+            const elapsedMs = Date.now() - this.battleStartTime;
+            elapsedSec = (elapsedMs / 1000).toFixed(1);
+        }
+
+        const resultLines = [
+            `정답 개수 : ${this.correctCount ?? 0}`,
+            `오답 개수 : ${this.wrongCount ?? 0}`,
+            `걸린 시간 : ${elapsedSec}초`,
+            `남은 체력 : ${this.playerHP}/${this.playerMaxHP}`
+        ];
+
+        const resultText = this.add.text(
+            width / 2 - panelWidth / 2 + 40,
+            height / 2 - 40,
+            resultLines.join('\n'),
+            {
+                fontSize: '20px',
+                color: '#e5e7eb',
+                lineSpacing: 8
+            }
+        ).setOrigin(0, 0).setDepth(1001);
+
+        // 보스 선택 화면으로 이동 버튼
+        const button = this.add.text(width / 2, height / 2 + panelHeight / 2 - 50, '보스 선택 화면으로', {
+            fontSize: '22px',
+            color: '#e5e7eb',
+            fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(1001)
+            .setInteractive({ useHandCursor: true })
+            .on('pointerover', () => button.setColor('#facc15'))
+            .on('pointerout', () => button.setColor('#e5e7eb'))
+            .on('pointerdown', () => {
+                // 결과창 정리
+                overlay.destroy();
+                panel.destroy();
+                title.destroy();
+                resultText.destroy();
+                button.destroy();
+
+                // 보스 선택(스테이지 선택) 화면으로 이동
+                this.scene.start('StageSelectScene');
+            });
+    }
+
 
   async onDefeat() {
     console.log('💀 패배...');
@@ -1369,7 +1469,7 @@ export default class BattleScene extends Phaser.Scene {
     await this.showDefeatDialogueText();
 
     this.time.delayedCall(2500, () => {
-      this.scene.start('StageSelectScene');
+        this.showBattleResult(false);
     });
   }
 
