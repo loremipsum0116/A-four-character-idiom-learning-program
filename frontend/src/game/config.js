@@ -11,6 +11,7 @@ import BattleScene from './scenes/BattleScene.js';
 import StatisticsScene from './scenes/StatisticsScene.js';
 import EndingScene from './scenes/EndingScene.js';
 import PvPScene from './scenes/PvPScene.js';
+import FinalResultScene from './scenes/FinalResultScene.js';
 
 /**
  * Phaser 게임 설정
@@ -43,7 +44,8 @@ export const gameConfig = {
     BattleScene,      // FR 4.0 - 턴제 전투 (핵심)
     StatisticsScene,  // FR 6.0 - 통계
     EndingScene,      // FR 5.1 - 엔딩
-    PvPScene          // FR 5.5 - PvP
+    PvPScene,         // FR 5.5 - PvP
+    FinalResultScene  // 최종 결과 씬
   ],
   render: {
     pixelArt: false,
