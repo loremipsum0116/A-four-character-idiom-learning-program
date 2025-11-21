@@ -22,7 +22,11 @@ import { saveGameData, loadGameData } from '../../utils/storageManager.js';
  */
 export default class BattleScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'BattleScene' });
+      super({ key: 'BattleScene' });
+
+
+
+      this.handleFingerCount = this.handleFingerCount.bind(this);
   }
 
   init(data) {
@@ -91,9 +95,22 @@ export default class BattleScene extends Phaser.Scene {
     this.createDialogueBox();
 
     // 전투 시작 대사 출력
-    this.showBattleStartDialogue();
+      this.showBattleStartDialogue();
+      window.addEventListener('finger-count', this.handleFingerCount);
+      this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
+          window.removeEventListener('finger-count', this.handleFingerCount);
+      });
+      this.events.on(Phaser.Scenes.Events.DESTROY, () => {
+          window.removeEventListener('finger-count', this.handleFingerCount);
+      });
   }
 
+    handleFingerCount(event) {
+        const count = event.detail.count;
+        // 1손가락 → 1번 보기, 2손가락 → 2번 보기 ...
+        console.log('제스처 입력 감지:', count);
+        this.selectAnswerByFingerCount(count);
+    }
   // ======================
   // UI 생성
   // ======================
@@ -886,6 +903,46 @@ export default class BattleScene extends Phaser.Scene {
     // 100ms마다 업데이트
     this.time.delayedCall(100, () => this.updateTimer());
   }
+
+    selectAnswerByFingerCount(fingerCount) {
+        // 1~4 아니면 무시
+        if (fingerCount < 1 || fingerCount > 4) return;
+
+        const selectedIndex = fingerCount - 1;
+
+
+        // 아직 문제 안 떠 있으면 무시
+        if (!this.currentQuiz || !this.currentQuiz.choices) {
+            console.log('currentQuiz 없음, 제스처 무시');
+            return;
+        }
+
+        
+        if (selectedIndex >= this.currentQuiz.choices.length) {
+            console.log('보기 범위 밖 인덱스:', selectedIndex);
+            return;
+        }
+
+        // 이미 처리 중이면(애니메이션 등) 무시
+        if (this.isProcessing) {
+            console.log('처리 중이라 제스처 무시');
+            return;
+        }
+
+        console.log('제스처로 보기 선택:', { fingerCount, selectedIndex });
+        this.submitAnswer(selectedIndex);
+
+        // 🔥 턴 상태에 따라 분기
+        if (this.turnPhase === 'PLAYER_ATTACK') {
+            this.submitAnswer(selectedIndex);
+        } else if (this.turnPhase === 'BOSS_DEFEND') {
+            this.submitDefenseAnswer(selectedIndex);
+        } else {
+            // 난이도 선택/대화 등일 때는 무시
+            console.log('제스처 입력 무시 (현재 턴 상태:', this.turnPhase, ')');
+        }
+    }
+
 
   async submitAnswer(selectedIndex) {
     if (this.isProcessing) return;
