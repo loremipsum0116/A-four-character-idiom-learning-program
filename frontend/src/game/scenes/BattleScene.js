@@ -1268,7 +1268,9 @@ export default class BattleScene extends Phaser.Scene {
   // ======================
 
   async onVictory() {
-    console.log('🎉 승리!');
+      console.log('🎉 승리!');
+      this.saveBattleResult(true);
+
     this.showMessage(`🎉 ${this.stageData.name} 보스를 물리쳤습니다!`);
 
     // 난이도 선택 버튼 및 퀴즈 UI 제거
@@ -1375,9 +1377,9 @@ export default class BattleScene extends Phaser.Scene {
   }
 
     /**
-   * 전투 결과창 표시
-   * @param {boolean} isVictory - 승리 여부
-   */
+ * 전투 결과창 표시
+ * @param {boolean} isVictory - 승리 여부
+ */
     showBattleResult(isVictory) {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
@@ -1427,12 +1429,19 @@ export default class BattleScene extends Phaser.Scene {
             }
         ).setOrigin(0, 0).setDepth(1001);
 
-        // 보스 선택 화면으로 이동 버튼
-        const button = this.add.text(width / 2, height / 2 + panelHeight / 2 - 50, '보스 선택 화면으로', {
-            fontSize: '22px',
-            color: '#e5e7eb',
-            fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(1001)
+        // 보스 선택 / 최종 결과로 이동 버튼
+        const button = this.add.text(
+            width / 2,
+            height / 2 + panelHeight / 2 - 50,
+            '보스 선택 화면으로',
+            {
+                fontSize: '22px',
+                color: '#e5e7eb',
+                fontStyle: 'bold'
+            }
+        )
+            .setOrigin(0.5)
+            .setDepth(1001)
             .setInteractive({ useHandCursor: true })
             .on('pointerover', () => button.setColor('#facc15'))
             .on('pointerout', () => button.setColor('#e5e7eb'))
@@ -1444,14 +1453,29 @@ export default class BattleScene extends Phaser.Scene {
                 resultText.destroy();
                 button.destroy();
 
-                // 보스 선택(스테이지 선택) 화면으로 이동
-                this.scene.start('StageSelectScene');
+                // 🔍 마지막 스테이지인지 확인
+                const stages = GAME_CONSTANTS.STAGES || [];
+                let isFinalStage = false;
+
+                if (stages.length > 0) {
+                    const lastId = stages[stages.length - 1].id;
+                    isFinalStage = this.stageData.id === lastId;
+                }
+
+                // 마지막 스테이지면 최종 결과 화면으로, 아니면 기존대로 스테이지 선택
+                if (isFinalStage) {
+                    this.scene.start('FinalResultScene');
+                } else {
+                    this.scene.start('StageSelectScene');
+                }
             });
     }
 
 
+
   async onDefeat() {
-    console.log('💀 패배...');
+      console.log('💀 패배...');
+      this.saveBattleResult(false);
     this.showMessage('💀 패배했습니다. 다시 도전하세요!');
 
     // 난이도 선택 버튼 및 퀴즈 UI 제거
@@ -1785,4 +1809,43 @@ export default class BattleScene extends Phaser.Scene {
       saveGameData('maxClearedStage', clearedStageId.toString());
     }
   }
+
+    saveBattleResult(isVictory) {
+        let elapsedSec = 0;
+
+        if (this.battleStartTime) {
+            const elapsedMs = Date.now() - this.battleStartTime;
+            elapsedSec = Number((elapsedMs / 1000).toFixed(1));
+        }
+
+        // 기존 저장된 배열 읽기
+        const raw = loadGameData('battleStats', '[]');
+        let stats = [];
+
+        try {
+            const parsed = JSON.parse(raw);
+            stats = Array.isArray(parsed) ? parsed : [];
+        } catch {
+            stats = [];
+        }
+
+        // 현재 스테이지 전투 결과 작성
+        const stageResult = {
+            stageId: this.stageData.id,
+            stageName: this.stageData.name,
+            isVictory,
+            correct: this.correctCount,
+            wrong: this.wrongCount,
+            time: elapsedSec,
+            endHp: this.playerHP,
+            maxHp: this.playerMaxHP
+        };
+
+        // 저장
+        stats.push(stageResult);
+        saveGameData('battleStats', JSON.stringify(stats));
+    }
+
+
+
 }
