@@ -92,6 +92,26 @@ export default class BattleScene extends Phaser.Scene {
 
     // 전투 시작 대사 출력
     this.showBattleStartDialogue();
+    window.addEventListener("finger-count", (e) => {
+  const count = e.detail.count;  // 1~4
+
+  // 보기 개수보다 큰 경우 무시
+  if (!this.quizButtons || count > this.quizButtons.length) return;
+
+  // 손가락과 보기 번호 매칭: 1 → index 0, 2 → index 1 ...
+  const selectedIndex = count - 1;
+
+  // 공격 퀴즈일 때
+  if (this.currentQuizType === "attack") {
+    this.submitAnswer(selectedIndex);
+  }
+
+  // 방어 퀴즈일 때
+  if (this.currentQuizType === "defense") {
+    this.submitDefenseAnswer(selectedIndex);
+  }
+});
+
   }
 
   // ======================
@@ -818,6 +838,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   showQuiz() {
+      this.currentQuizType = "attack";   // ← 추가
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
@@ -1074,6 +1095,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   showDefenseQuiz() {
+      this.currentQuizType = "defense";   // ← 추가
     this.quizStartTime = Date.now();
     this.showMessage(`🛡️ 방어 문제: ${this.currentQuiz.question}`);
 
