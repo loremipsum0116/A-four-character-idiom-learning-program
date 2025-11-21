@@ -1,11 +1,4 @@
-/**
- * GestureRecognition - MediaPipe 제스처 인식 서비스
- *
- * 손동작을 인식하여 게임 조작으로 변환
- */
-
-// TODO: MediaPipe 라이브러리 설치 후 주석 해제
-// import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
+import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 
 export class GestureRecognition {
   constructor() {
@@ -13,17 +6,17 @@ export class GestureRecognition {
     this.video = null;
     this.isRunning = false;
     this.callbacks = {};
+    this.fingerBuffer = [];
+    this._gestureUsed = false;
+    this._isGameActive = true;
+    this.handedness = 'RIGHT';
+    this.MAX_BUFFER = 5;           // 버퍼 길이
+    this.STABLE_THRESHOLD = 3;     // 연속 안정화 횟수
+    this.keyboardListenerAdded = false;
   }
 
-  /**
-   * 초기화
-   */
   async initialize() {
-    console.log('🤚 제스처 인식 초기화 시작...');
-
     try {
-      // TODO: MediaPipe 초기화
-      /*
       const vision = await FilesetResolver.forVisionTasks(
         'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
       );
@@ -37,261 +30,183 @@ export class GestureRecognition {
         minHandPresenceConfidence: 0.5,
         minTrackingConfidence: 0.5
       });
-      */
 
-      // 웹캠 시작
       await this.startCamera();
-
       console.log('✅ 제스처 인식 초기화 완료');
     } catch (error) {
-      console.error('❌ 제스처 인식 초기화 실패:', error);
+      console.error('❌ GestureRecognition 초기화 실패', error);
       throw error;
     }
   }
 
-  /**
-   * 웹캠 시작
-   */
   async startCamera() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: 640,
-          height: 480
-        }
-      });
-
-      // 비디오 엘리먼트 생성
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
       this.video = document.createElement('video');
       this.video.srcObject = stream;
       this.video.autoplay = true;
-
-      // 웹캠 프리뷰 표시 (선택 사항)
       this.createPreview();
-
       console.log('📹 웹캠 시작됨');
     } catch (error) {
-      console.error('❌ 웹캠 접근 실패:', error);
+      console.error('❌ 웹캠 접근 실패', error);
       throw error;
     }
   }
 
-  /**
-   * 웹캠 프리뷰 생성
-   */
   createPreview() {
     const preview = document.createElement('div');
     preview.id = 'webcam-preview';
     preview.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 240px;
-      height: 180px;
-      border: 3px solid #667eea;
-      border-radius: 8px;
-      overflow: hidden;
-      z-index: 1000;
-      background: black;
+      position: fixed; top: 20px; right: 20px;
+      width: 240px; height: 180px;
+      border: 3px solid #667eea; border-radius: 8px;
+      overflow: hidden; z-index: 1000; background: black;
     `;
-
     this.video.style.cssText = `
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scaleX(-1); /* 거울 모드 */
+      width: 100%; height: 100%;
+      object-fit: cover; transform: scaleX(-1);
     `;
-
     preview.appendChild(this.video);
     document.body.appendChild(preview);
   }
 
-  /**
-   * 제스처 감지 시작
-   */
   start() {
-    if (this.isRunning) return;
-
-    this.isRunning = true;
-    this.detectGesture();
+    if (!this.isRunning) {
+      this.isRunning = true;
+      this.detectGesture();
+    }
   }
 
-  /**
-   * 제스처 감지 중지
-   */
   stop() {
     this.isRunning = false;
   }
 
-  /**
-   * 제스처 감지 루프
-   */
   async detectGesture() {
     if (!this.isRunning || !this.video) return;
 
     try {
-      // TODO: MediaPipe로 손 감지
-      /*
-      const results = this.handLandmarker.detect(this.video);
+      const results = await this.handLandmarker.detectAsync(this.video);
 
       if (results.landmarks && results.landmarks.length > 0) {
         const landmarks = results.landmarks[0];
-        const gestureType = this.recognizeGesture(landmarks);
 
-        if (gestureType) {
-          this.emit('detected', gestureType);
+        // --- 1. 주먹/손바닥 감지 (ATTACK/DEFEND) ---
+        const gestureByShape = this.recognizeGestureByShape(landmarks);
+        if (gestureByShape && !this._gestureUsed) {
+          this._gestureUsed = true;
+          this.emit('detected', gestureByShape);
+        } else {
+          // --- 2. 손가락 개수 기반 난이도 감지 (EASY/MEDIUM/HARD) ---
+          const fingerCount = this.countFingers(landmarks);
+          this.fingerBuffer.push(fingerCount);
+          if (this.fingerBuffer.length > this.MAX_BUFFER) this.fingerBuffer.shift();
+
+          const stableCount = this.getStableFingerCount();
+          if (stableCount >= 1 && stableCount <= 3 && !this._gestureUsed) {
+            this._gestureUsed = true;
+            const difficultyMap = { 1: 'EASY', 2: 'MEDIUM', 3: 'HARD' };
+            this.emit('detected', difficultyMap[stableCount]);
+          }
         }
       }
-      */
-
-      // 임시: 키보드로 테스트
-      this.setupKeyboardTest();
-
     } catch (error) {
-      console.error('제스처 감지 에러:', error);
+      console.error('Gesture detect error', error);
     }
 
-    // 다음 프레임
+    // 키보드 테스트 모드
+    this.setupKeyboardTest();
+
     requestAnimationFrame(() => this.detectGesture());
   }
 
-  /**
-   * 손 랜드마크로 제스처 인식
-   *
-   * @param {Array} landmarks - MediaPipe 손 랜드마크
-   * @returns {string|null} - 제스처 타입
-   */
-  recognizeGesture(landmarks) {
-    // 주먹 감지
-    if (this.isFist(landmarks)) {
-      return 'ATTACK';
-    }
-
-    // 손바닥 감지
-    if (this.isPalm(landmarks)) {
-      return 'DEFEND';
-    }
-
-    // 손가락 개수 감지
-    const fingerCount = this.countFingers(landmarks);
-    if (fingerCount === 1) return 'EASY';
-    if (fingerCount === 2) return 'MEDIUM';
-    if (fingerCount === 3) return 'HARD';
-
+  recognizeGestureByShape(landmarks) {
+    if (this.isFist(landmarks)) return 'ATTACK';
+    if (this.isPalm(landmarks)) return 'DEFEND';
     return null;
   }
 
-  /**
-   * 주먹 감지
-   */
   isFist(landmarks) {
-    // 손가락 끝 포인트 인덱스
-    const fingerTips = [8, 12, 16, 20]; // 검지, 중지, 약지, 소지
+    const fingerTips = [8, 12, 16, 20];
     const fingerBases = [5, 9, 13, 17];
-
-    // 모든 손가락이 접혀있는지 확인
-    return fingerTips.every((tip, i) =>
-      landmarks[tip].y > landmarks[fingerBases[i]].y
-    );
+    return fingerTips.every((tip, i) => landmarks[tip].y > landmarks[fingerBases[i]].y);
   }
 
-  /**
-   * 손바닥 감지
-   */
   isPalm(landmarks) {
     const fingerTips = [8, 12, 16, 20];
     const fingerBases = [5, 9, 13, 17];
-
-    // 모든 손가락이 펴져있는지 확인
-    return fingerTips.every((tip, i) =>
-      landmarks[tip].y < landmarks[fingerBases[i]].y
-    );
+    return fingerTips.every((tip, i) => landmarks[tip].y < landmarks[fingerBases[i]].y);
   }
 
-  /**
-   * 펴진 손가락 개수 세기
-   */
   countFingers(landmarks) {
-    const fingerTips = [8, 12, 16, 20];
-    const fingerBases = [5, 9, 13, 17];
-
+    if (!landmarks) return 0;
     let count = 0;
-    fingerTips.forEach((tip, i) => {
-      if (landmarks[tip].y < landmarks[fingerBases[i]].y) {
-        count++;
-      }
-    });
 
-    // 엄지 추가 (다른 방향)
-    if (landmarks[4].x < landmarks[3].x) {
-      count++;
+    const tips = [8, 12, 16, 20];
+    const mcp = [5, 9, 13, 17];
+
+    for (let i = 0; i < tips.length; i++) {
+      const tip = landmarks[tips[i]];
+      const base = landmarks[mcp[i]];
+      const pip = landmarks[mcp[i] + 1];
+      const v1 = { x: tip.x - pip.x, y: tip.y - pip.y };
+      const v2 = { x: pip.x - base.x, y: pip.y - base.y };
+      const angle = Math.acos((v1.x*v2.x + v1.y*v2.y) / (Math.hypot(v1.x,v1.y)*Math.hypot(v2.x,v2.y))) * (180/Math.PI);
+      if (angle > 150) count++;
     }
 
-    return count;
+    // 엄지 정교화
+    const thumbTip = landmarks[4];
+    const thumbIP = landmarks[3];
+    const wrist = landmarks[0];
+    const vThumb = { x: thumbTip.x - wrist.x, y: thumbTip.y - wrist.y };
+    const vIP = { x: thumbIP.x - wrist.x, y: thumbIP.y - wrist.y };
+    const angleThumb = Math.acos((vThumb.x*vIP.x + vThumb.y*vIP.y) / (Math.hypot(vThumb.x,vThumb.y)*Math.hypot(vIP.x,vIP.y))) * (180/Math.PI);
+    if (angleThumb > 150) count++;
+
+    return Math.min(5, Math.max(0, count));
   }
 
-  /**
-   * 키보드 테스트 설정 (임시)
-   */
+  getStableFingerCount() {
+    const freqMap = this.fingerBuffer.reduce((acc, val) => {
+      acc[val] = (acc[val] || 0) + 1;
+      return acc;
+    }, {});
+    const mostCommon = parseInt(Object.keys(freqMap).reduce((a, b) => freqMap[a] > freqMap[b] ? a : b));
+    return freqMap[mostCommon] >= this.STABLE_THRESHOLD ? mostCommon : 0;
+  }
+
   setupKeyboardTest() {
     if (this.keyboardListenerAdded) return;
 
     document.addEventListener('keydown', (e) => {
-      const keyMap = {
-        'a': 'ATTACK',
-        'd': 'DEFEND',
-        '1': 'EASY',
-        '2': 'MEDIUM',
-        '3': 'HARD'
-      };
-
+      const keyMap = { 'a':'ATTACK', 'd':'DEFEND', '1':'EASY', '2':'MEDIUM', '3':'HARD' };
       const gesture = keyMap[e.key.toLowerCase()];
-      if (gesture) {
-        console.log(`⌨️ 키보드 테스트: ${gesture}`);
-        this.emit('detected', gesture);
-      }
+      if (gesture) this.emit('detected', gesture);
     });
 
     this.keyboardListenerAdded = true;
-    console.log('⌨️ 키보드 테스트 모드 활성화 (a: 공격, d: 방어, 1/2/3: 난이도)');
+    console.log('⌨️ 키보드 테스트 모드 활성화');
   }
 
-  /**
-   * 이벤트 리스너 등록
-   */
-  on(event, callback) {
-    if (!this.callbacks[event]) {
-      this.callbacks[event] = [];
-    }
-    this.callbacks[event].push(callback);
+  on(event, cb) {
+    if (!this.callbacks[event]) this.callbacks[event] = [];
+    this.callbacks[event].push(cb);
   }
 
-  /**
-   * 이벤트 발생
-   */
   emit(event, data) {
-    if (this.callbacks[event]) {
-      this.callbacks[event].forEach(callback => callback(data));
-    }
+    if (!this.callbacks[event]) return;
+    this.callbacks[event].forEach(cb => cb(data));
   }
 
-  /**
-   * 정리
-   */
   destroy() {
     this.stop();
-
+    this.callbacks = {};
     if (this.video && this.video.srcObject) {
-      const tracks = this.video.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
+      this.video.srcObject.getTracks().forEach(track => track.stop());
     }
-
     const preview = document.getElementById('webcam-preview');
-    if (preview) {
-      preview.remove();
-    }
+    if (preview) preview.remove();
   }
 }
 
-// 싱글톤 인스턴스
 export const gestureRecognition = new GestureRecognition();
