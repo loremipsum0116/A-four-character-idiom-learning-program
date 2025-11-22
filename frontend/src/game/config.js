@@ -16,6 +16,8 @@ import DifficultySelectScene from './scenes/learning/DifficultySelectScene.js';
 import CardMatchScene from './scenes/learning/CardMatchScene.js';
 import BookScene from './scenes/learning/BookScene.js';
 import FinalResultScene from './scenes/FinalResultScene.js';
+// 💡 [추가] InfiniteModeScene 임포트
+import InfiniteModeScene from './scenes/InfiniteMode.js';
 
 
 
@@ -56,7 +58,8 @@ export const gameConfig = {
     StatisticsScene,  // FR 6.0 - 통계
     EndingScene,      // FR 5.1 - 엔딩
     PvPScene,          // FR 5.5 - PvP
-    FinalResultScene  // 최종 결과 씬
+    FinalResultScene,  // 최종 결과 씬
+    InfiniteModeScene // 💡 [추가] 무한 모드 씬
   ],
   render: {
     pixelArt: false,

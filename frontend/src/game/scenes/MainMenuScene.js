@@ -73,6 +73,14 @@ export default class MainMenuScene extends Phaser.Scene {
         scene: 'StageSelectScene',
         description: '12지신과 턴제 전투를 합니다'
       },
+      // 💡 [추가] 무한 모드 버튼 추가
+      {
+        text: '♾️ 무한 모드',
+        color: 0xffa500, // 주황색 계열
+        hoverColor: 0xffc72c,
+        scene: 'InfiniteModeScene',
+        description: '끝없이 도전하며 기록을 세웁니다'
+      },
       {
         text: '📊 개인 기록',
         color: 0x3b82f6,
@@ -90,7 +98,10 @@ export default class MainMenuScene extends Phaser.Scene {
     ];
 
     buttons.forEach((btn, index) => {
-      const y = startY + (index * buttonGap);
+      // 💡 [수정] 무한 모드 추가로 인해 시작 y 좌표와 간격 계산 수정
+      // 버튼 수가 4개에서 5개로 늘었으므로 버튼 위치를 조정하여 중앙에 배치합니다.
+      const adjustedStartY = 200; // 시작 위치를 조금 올립니다
+      const y = adjustedStartY + (index * 80); // 간격을 좁힙니다
 
       // 버튼 배경
       const button = this.add.rectangle(centerX, y, 500, 70, btn.color)
@@ -139,8 +150,8 @@ export default class MainMenuScene extends Phaser.Scene {
 
     console.log(`🎮 ${sceneName}으로 이동`);
 
-    // 학습 모드와 게임 모드에서만 Gesture 초기화 (이 로직은 그대로 유지)
-    if(sceneName === 'LearningModeScene' || sceneName === 'StageSelectScene') {
+    // 학습 모드, 게임 모드, 무한 모드에서만 Gesture 초기화
+    if(sceneName === 'LearningModeScene' || sceneName === 'StageSelectScene' || sceneName === 'InfiniteModeScene') {
       const container = document.getElementById('game-container');
       initGesture(container);
     }
