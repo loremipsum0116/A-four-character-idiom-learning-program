@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 import { idioms } from '../../../data/idioms.js';
+import { gestureRecognition } from '../../../services/GestureRecognition.js';
 
 const IDIOMS_DATA = idioms; 
 
-// 난이도 매핑
 const DIFFICULTY_MAP = {
     'EASY': 'EASY', 
     'MEDIUM': 'MEDIUM', 
@@ -11,6 +11,9 @@ const DIFFICULTY_MAP = {
 };
 
 export default class FillBlankScene extends Phaser.Scene {
+    _gestureUsed = false; 
+    _gestureListener = null;
+
     // --- Configuration & State ---
     maxLives = 3; 
     baseScore = 10;
@@ -56,11 +59,10 @@ export default class FillBlankScene extends Phaser.Scene {
     }
 
     // --- Phaser Lifecycle Methods ---
-    create() {
+    async create() {
         this.cameras.main.setBackgroundColor('#1e293b'); 
         this.setupUI();
 
-        // 초기 게임 상태
         this._currentLives = this.maxLives;
         this._currentScore = 0;
         this._currentQuestionNumber = 0;
@@ -68,6 +70,8 @@ export default class FillBlankScene extends Phaser.Scene {
         
         this.updateUI();
         this.loadIdiomsAndStartGame();
+        
+        await this.initGestureRecognition();
     }
 
     update(time, delta) {
@@ -80,8 +84,51 @@ export default class FillBlankScene extends Phaser.Scene {
             this.updateTimerDisplay();
         }
     }
+    
+    shutdown() {
+        this.resetGestureRecognition();
+    }
+
+
+    // ----------------- 제스처 인식 -----------------
+    async initGestureRecognition() {
+        try {
+            await gestureRecognition.initialize();
+            gestureRecognition.start();
+
+            if(this._gestureListener) window.removeEventListener('finger-count', this._gestureListener);
+
+            this._gestureListener = (e) => {
+                if (!this._isGameActive || this._gestureUsed) return; 
+
+                const fingerCount = Number(e?.detail?.count);
+                
+                if (fingerCount >= 1 && fingerCount <= 4) {
+                    const choiceIndex = fingerCount - 1;
+                    if (choiceIndex < this.choiceButtons.length) {
+                        this.handleChoice(choiceIndex);
+                    }
+                }
+            };
+            window.addEventListener('finger-count', this._gestureListener);
+        } catch (err) {
+            console.error('Gesture recognition init failed:', err);
+        }
+    }
+
+    resetGestureRecognition() {
+        if(this._gestureListener) window.removeEventListener('finger-count', this._gestureListener);
+        this._gestureListener = null;
+        gestureRecognition.stop?.(); 
+    }
+
+    resetGesture() {
+        this._gestureUsed = false;
+        gestureRecognition.resetGesture?.(); 
+    }
 
     // --- Game Logic ---
+
     loadIdiomsAndStartGame() {
         const requiredDifficulty = DIFFICULTY_MAP[this.difficulty];
         let filteredIdioms = IDIOMS_DATA.filter(idiom => idiom.difficulty === requiredDifficulty);
@@ -93,7 +140,7 @@ export default class FillBlankScene extends Phaser.Scene {
     }
 
     loadNextQuestion() {
-        
+        this.resetGesture(); 
 
         if (this._currentQuestionNumber >= this.maxQuestions || this._idiomPool.length === 0) {
             const allQuestionsDone = this._currentQuestionNumber >= this.maxQuestions;
@@ -110,11 +157,14 @@ export default class FillBlankScene extends Phaser.Scene {
                 this.meaningText.setVisible(false);
                 this.questionCountText.setVisible(false);
                 this.timerText.setVisible(false);
+                
+                this.resetGestureRecognition();
 
                 this.time.delayedCall(3000, () => {
-                this.resetGame();
-                this.scene.start("DifficultySelectScene");
-            });
+                    this.resetGame();
+                    // ⭐ [수정] targetScene 명시
+                    this.scene.start("DifficultySelectScene", { targetScene: 'FillBlankScene' });
+                });
 
                 return;
             }
@@ -139,7 +189,6 @@ export default class FillBlankScene extends Phaser.Scene {
         this.feedbackText.setText('').setVisible(false);
         this.questionCountText.setText(`문제 ${this._currentQuestionNumber}/${this.maxQuestions}`);
 
-        //힌트 버튼
         if (this.hintButton) {
             if (this.difficulty === 'EASY') {
                 this.hintButton.setVisible(true).setAlpha(1).setInteractive(true);
@@ -182,10 +231,14 @@ export default class FillBlankScene extends Phaser.Scene {
     }
 
     handleChoice(choiceIndex) {
-        if (!this._isGameActive) return;
-        this._isGameActive = false; 
-        this.enableChoices(false); 
+        if (this._gestureUsed) return; 
 
+        this._gestureUsed = true; 
+        
+        if (!this._isGameActive) return; 
+        this._isGameActive = false;
+        this.enableChoices(false);
+        
         const selectedHanja = this._currentChoices[choiceIndex];
         const choiceButton = this.choiceButtons[choiceIndex];
         const isCorrect = selectedHanja === this._correctAnswer;
@@ -211,11 +264,7 @@ export default class FillBlankScene extends Phaser.Scene {
         }, [], this);
     }
 
-    /**
-     * 정답 처리 로직 (수정됨: 무조건 10점 획득)
-     */
     handleCorrectAnswer() {
-        // ⭐ 수정: 무조건 10점을 획득하도록 earnedScore를 baseScore 값(10)으로 고정
         const earnedScore = this.baseScore; 
         
         this._currentScore += earnedScore;
@@ -250,15 +299,9 @@ export default class FillBlankScene extends Phaser.Scene {
         }, [], this);
     }
 
-    /**
-     * 힌트 표시 로직 (수정됨: 점수 패널티 제거)
-     */
     showHint() {
         if (this._hintUsed) return;
         this._hintUsed = true;
-
-        // ⭐ 수정: 점수 패널티 로직 제거 (this._currentScore = Math.max(0, this._currentScore - this.hintPenalty);)
-        // 이제 힌트를 사용해도 점수가 차감되지 않습니다.
 
         this.meaningText.setVisible(true); 
         if (this.hintButton) {
@@ -275,10 +318,27 @@ export default class FillBlankScene extends Phaser.Scene {
         if (this.hintButton) this.hintButton.removeAllListeners();
         if (this.hintButton) this.hintButton.setVisible(false);
     
-        //난이도 선택 씬으로 이동
+        this.resetGestureRecognition();
+        
         this.time.delayedCall(500, () => {
-            this.scene.start('DifficultySelectScene', { finalScore: this._currentScore });
+            // ⭐ [수정] targetScene 명시
+            this.scene.start('DifficultySelectScene', { 
+                finalScore: this._currentScore,
+                targetScene: 'FillBlankScene' 
+            });
         });
+    }
+
+    resetGame() {
+        this.resetGestureRecognition();
+        
+        this.time.removeAllEvents();
+        this.choiceButtons.forEach(choice => {
+            if(choice.rect) choice.rect.destroy();
+            if(choice.text) choice.text.destroy();
+        });
+        this.choiceButtons = [];
+        if (this.hintButton) this.hintButton.destroy();
     }
 
 
@@ -334,7 +394,6 @@ export default class FillBlankScene extends Phaser.Scene {
 
         this.createChoiceButtons();
 
-        //힌트 버튼 (초급만)
         if (this.difficulty === 'EASY') {
             this.hintButton = this.add.text(120, height - 60, '💡 힌트 보기', {
                 fontSize: '20px',
@@ -348,11 +407,8 @@ export default class FillBlankScene extends Phaser.Scene {
     })
     .setInteractive({ useHandCursor: true })
     .on('pointerdown', () => {
-        this.time.removeAllEvents();
-        this.choiceButtons.forEach(choice => choice.rect.removeAllListeners());
-        this.choiceButtons = [];
-        if (this.hintButton) this.hintButton.removeAllListeners();
-
+        this.resetGame();
+        // ⭐ [수정] targetScene 명시
         this.scene.start('DifficultySelectScene', { 
             targetScene: 'FillBlankScene' 
         });
@@ -361,10 +417,10 @@ export default class FillBlankScene extends Phaser.Scene {
 
     createChoiceButtons() {
          this.choiceButtons.forEach(choice => {
-        choice.rect.destroy();
-        choice.text.destroy();
-    });
-    this.choiceButtons = [];
+            if(choice.rect) choice.rect.destroy();
+            if(choice.text) choice.text.destroy();
+         });
+         this.choiceButtons = [];
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
         const buttonWidth = 200;
