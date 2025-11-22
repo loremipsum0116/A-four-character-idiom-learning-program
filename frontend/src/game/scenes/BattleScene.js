@@ -198,7 +198,23 @@ create() {
         this.onDefeat();
       })
       .on('pointerover', () => loseBtn.setColor('#fca5a5'))
-      .on('pointerout', () => loseBtn.setColor('#ef4444'));
+        .on('pointerout', () => loseBtn.setColor('#ef4444'));
+
+      // 📊 최종 결과 버튼 (디버그용, 모든 전투 스킵하고 최종 결과창으로 이동)
+      const finalBtn = this.add.text(width - 20, 80, '📊 최종 결과', {
+          fontSize: '16px',
+          color: '#e5e7eb',
+          backgroundColor: '#1f2937',
+          padding: { x: 10, y: 5 }
+      }).setOrigin(1, 0)
+          .setInteractive({ useHandCursor: true })
+          .on('pointerdown', () => {
+              console.log('📊 디버그: 최종 결과 화면으로 이동');
+              this.scene.start('FinalResultScene');
+          })
+          .on('pointerover', () => finalBtn.setColor('#facc15'))
+          .on('pointerout', () => finalBtn.setColor('#e5e7eb'));
+  
   }
 
   createCharacters() {
