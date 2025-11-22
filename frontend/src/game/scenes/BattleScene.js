@@ -1490,6 +1490,10 @@ updateBossHP() {
                     isFinalStage = this.stageData.id === lastId;
                 }
 
+                if (isFinalStage && isVictory) {
+                    saveGameData('hiddenBossUnlocked', 'true');
+                }
+
                 // 마지막 스테이지면 최종 결과 화면으로, 아니면 기존대로 스테이지 선택
                 if (isFinalStage) {
                     this.scene.start('FinalResultScene');
