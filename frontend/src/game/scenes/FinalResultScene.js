@@ -147,7 +147,8 @@ export default class FinalResultScene extends Phaser.Scene {
             }).setOrigin(0.5, 0);
 
             // 체력 텍스트 라벨
-            this.add.text(x, y - 10, `${s.endHp}/${s.maxHp}`, {
+            const percent = Math.round((s.endHp / s.maxHp) * 100);
+            this.add.text(x, y - 10, `${percent}%`, {
                 fontSize: '12px',
                 color: '#e5e7eb'
             }).setOrigin(0.5, 1);
@@ -156,17 +157,17 @@ export default class FinalResultScene extends Phaser.Scene {
         line.strokePath();
 
         // Y축 눈금 라벨
-        this.add.text(originX - 10, originY - graphHeight, `${maxHp}`, {
+        this.add.text(originX - 10, originY - graphHeight, `100%`, {
             fontSize: '12px',
             color: '#e5e7eb'
         }).setOrigin(1, 0.5);
 
-        this.add.text(originX - 10, originY - graphHeight / 2, `${Math.round(maxHp / 2)}`, {
+        this.add.text(originX - 10, originY - graphHeight / 2, `50%`, {
             fontSize: '12px',
             color: '#e5e7eb'
         }).setOrigin(1, 0.5);
 
-        this.add.text(originX - 10, originY, `0`, {
+        this.add.text(originX - 10, originY, `0%`, {
             fontSize: '12px',
             color: '#e5e7eb'
         }).setOrigin(1, 0.5);
