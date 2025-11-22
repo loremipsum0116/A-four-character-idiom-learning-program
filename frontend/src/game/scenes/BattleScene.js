@@ -329,21 +329,20 @@ export default class BattleScene extends Phaser.Scene {
    * @param {number} duration - 사용되지 않음 (하위 호환성 유지)
    * @param {boolean} force - 강제로 표시 (이전 대사 무시)
    */
-  async showDialogue(text, duration = 3000, force = false) {
+async showDialogue(text, duration = 3000, force = false) {
     // 강제 모드가 아니고 이미 대사 표시 중이면 대기
     if (!force && this.isShowingDialogue) {
-      console.log('⏳ 대사 표시 대기 중...');
-      // 이전 대사가 끝날 때까지 최대 10초 대기
-      let waitTime = 0;
-      while (this.isShowingDialogue && waitTime < 10000) {
-        await this.delay(100);
-        waitTime += 100;
-      }
+        console.log('⏳ 대사 표시 대기 중...');
+        let waitTime = 0;
+        while (this.isShowingDialogue && waitTime < 10000) {
+            await this.delay(100);
+            waitTime += 100;
+        }
     }
 
     // 강제 모드면 기존 트윈 중단
     if (force && this.isShowingDialogue) {
-      this.tweens.killTweensOf([this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint]);
+        this.tweens.killTweensOf([this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint]);
     }
 
     this.isShowingDialogue = true;
@@ -354,26 +353,46 @@ export default class BattleScene extends Phaser.Scene {
     this.dialogueArrow.setVisible(false);
     this.dialogueHint.setVisible(false);
 
+    // 타이핑 상태 초기화
+    this.isTypingDialogue = true;
+    this.currentDialogueText = this.dialogueText;
+    this.fullDialogueText = text;
+
+    // 스페이스바 입력 시 타이핑 중이라면 전체 텍스트 표시
+    const spaceHandler = () => {
+        if (this.isTypingDialogue) {
+            this.showFullDialogue();
+        }
+    };
+    this.input.keyboard.once('keydown-SPACE', spaceHandler);
+
     // 타이핑 효과
     this.dialogueText.setText('');
     const chars = text.split('');
 
     for (let i = 0; i < chars.length; i++) {
-      this.dialogueText.setText(this.dialogueText.text + chars[i]);
-      await this.delay(20); // 타이핑 속도 (더 빠르게)
+        if (!this.isTypingDialogue) {
+            this.dialogueText.setText(text);
+            break;
+        }
+        this.dialogueText.setText(this.dialogueText.text + chars[i]);
+        await this.delay(20); // 글자 단위 딜레이
     }
 
-    // 타이핑 완료 후 화살표와 안내 텍스트 표시
+    // 타이핑 완료
+    this.isTypingDialogue = false;
+
+    // 화살표와 안내 텍스트 표시
     this.dialogueArrow.setVisible(true);
     this.dialogueHint.setVisible(true);
 
     // 화살표 깜빡임 효과
     this.tweens.add({
-      targets: this.dialogueArrow,
-      alpha: 0.3,
-      duration: 500,
-      yoyo: true,
-      repeat: -1
+        targets: this.dialogueArrow,
+        alpha: 0.3,
+        duration: 500,
+        yoyo: true,
+        repeat: -1
     });
 
     // 사용자 입력 대기
@@ -385,22 +404,33 @@ export default class BattleScene extends Phaser.Scene {
 
     // 페이드아웃
     this.tweens.add({
-      targets: [this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint],
-      alpha: 0,
-      duration: 300,
-      onComplete: () => {
-        this.dialogueBox.setVisible(false);
-        this.dialogueText.setVisible(false);
-        this.dialogueArrow.setVisible(false);
-        this.dialogueHint.setVisible(false);
-        this.dialogueBox.setAlpha(1);
-        this.dialogueText.setAlpha(1);
-        this.dialogueArrow.setAlpha(1);
-        this.dialogueHint.setAlpha(1);
-        this.isShowingDialogue = false;
-      }
+        targets: [this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint],
+        alpha: 0,
+        duration: 300,
+        onComplete: () => {
+            this.dialogueBox.setVisible(false);
+            this.dialogueText.setVisible(false);
+            this.dialogueArrow.setVisible(false);
+            this.dialogueHint.setVisible(false);
+            this.dialogueBox.setAlpha(1);
+            this.dialogueText.setAlpha(1);
+            this.dialogueArrow.setAlpha(1);
+            this.dialogueHint.setAlpha(1);
+            this.isShowingDialogue = false;
+        }
     });
-  }
+}
+
+/**
+ * 타이핑 중 스페이스 입력 시 전체 텍스트 즉시 표시
+ */
+showFullDialogue() {
+    this.isTypingDialogue = false;
+    if (this.currentDialogueText) {
+        this.currentDialogueText.setText(this.fullDialogueText);
+    }
+}
+
 
   /**
    * 대사 진행 입력 대기 (스페이스바 또는 화살표 클릭)
