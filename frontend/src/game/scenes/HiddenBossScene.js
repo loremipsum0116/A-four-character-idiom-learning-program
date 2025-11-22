@@ -15,14 +15,14 @@ export default class HiddenBossScene extends Phaser.Scene {
         this.add.rectangle(width / 2, height / 2, width, height, 0x020617);
 
         // 타이틀
-        this.add.text(width / 2, 120, '🕶️ 히든 보스전', {
+        this.add.text(width / 2, 120, ' 히든 보스전', {
             fontSize: '40px',
             color: '#fbbf24',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
         this.add.text(width / 2, 190,
-            '12지신을 모두 쓰러뜨린 자만이\n도전할 수 있는 비밀 전투입니다.', {
+            '12지신을 모두 쓰러뜨리고 나타난\n의문의 형체...', {
             fontSize: '20px',
             color: '#e5e7eb',
             align: 'center'
@@ -31,8 +31,8 @@ export default class HiddenBossScene extends Phaser.Scene {
         // 히든 보스 데이터 (constants에 따로 추가해도 되고, 여기 하드코딩해도 됨)
         const hiddenBoss = {
             id: 99,
-            name: '히든 수호자',
-            emoji: '🕶️',
+            name: '???',
+            emoji: '',
             bossHp: 800,
             bossAttack: 40,
             image: '/pictures/hidden-boss.png',
@@ -44,6 +44,19 @@ export default class HiddenBossScene extends Phaser.Scene {
             fontSize: '22px',
             color: '#93c5fd',
             align: 'center'
+        }).setOrigin(0.5);
+
+        // 히든 보스 전용 대사
+        this.add.text(width / 2, 320, `??? : "..."`, {
+            fontSize: '20px',
+            color: '#e5e7eb'
+        }).setOrigin(0.5);
+
+        // 사자의 대사
+        this.add.text(width / 2, 360, `사자 : "넌 누구냐?"`, {
+            fontSize: '20px',
+            color: '#fbbf24',
+            fontStyle: 'bold'
         }).setOrigin(0.5);
 
         // 시작 버튼
