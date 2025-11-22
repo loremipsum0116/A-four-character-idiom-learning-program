@@ -14,6 +14,13 @@ export default class FillBlankScene extends Phaser.Scene {
     _gestureUsed = false; 
     _gestureListener = null;
 
+    // --- [ADDED] 제스처 지연 확인 상태 변수 ---
+    _gestureConfirmTimer = null; 
+    _pendingChoiceIndex = -1;
+    // 제스처가 안정적으로 유지되어야 하는 시간 (밀리초)
+    _gestureConfirmationDelay = 250; 
+    // ------------------------------------------
+
     // --- Configuration & State ---
     maxLives = 3; 
     baseScore = 10;
@@ -99,15 +106,43 @@ export default class FillBlankScene extends Phaser.Scene {
             if(this._gestureListener) window.removeEventListener('finger-count', this._gestureListener);
 
             this._gestureListener = (e) => {
-                if (!this._isGameActive || this._gestureUsed) return; 
+                // 게임 비활성 상태이거나 이미 선택이 완료되었다면 무시
+                if (!this._isGameActive || this._gestureUsed) {
+                    // 선택이 완료되었는데 타이머가 돌아가고 있다면 정리 (안전장치)
+                    if (this._gestureUsed && this._gestureConfirmTimer) {
+                         this.clearConfirmationTimer();
+                    }
+                    return; 
+                }
 
                 const fingerCount = Number(e?.detail?.count);
+                const choiceIndex = fingerCount - 1;
                 
                 if (fingerCount >= 1 && fingerCount <= 4) {
-                    const choiceIndex = fingerCount - 1;
                     if (choiceIndex < this.choiceButtons.length) {
-                        this.handleChoice(choiceIndex);
+                        
+                        // 1. 이미 같은 인덱스가 대기 중이면 무시 (제스처가 안정적인 상태)
+                        if (this._pendingChoiceIndex === choiceIndex) return;
+                        
+                        // 2. 다른 인덱스가 들어오면 기존 타이머를 취소 (흔들림 감지)
+                        this.clearConfirmationTimer();
+                        
+                        // 3. 새로운 인덱스와 타이머 설정
+                        this._pendingChoiceIndex = choiceIndex;
+                        
+                        // UI에 대기 상태 표시
+                        this.feedbackText.setText(`선택 대기: ${choiceIndex + 1}번...`).setColor('#fbbf24').setVisible(true);
+
+                        // 지정된 시간(250ms) 후에도 제스처가 유지되면 handleChoice 호출
+                        this._gestureConfirmTimer = this.time.delayedCall(this._gestureConfirmationDelay, () => {
+                            // 타이머가 만료되면 최종적으로 선택 처리
+                            this.handleChoice(this._pendingChoiceIndex);
+                            this._pendingChoiceIndex = -1; // 선택 완료 후 초기화
+                        }, [], this);
                     }
+                } else {
+                     // 손가락 개수가 0개, 5개 등 유효 범위를 벗어나면 대기 중인 타이머 취소 (리셋 의도)
+                     this.clearConfirmationTimer();
                 }
             };
             window.addEventListener('finger-count', this._gestureListener);
@@ -116,7 +151,21 @@ export default class FillBlankScene extends Phaser.Scene {
         }
     }
 
+    // ⭐ [ADDED] 타이머 정리 함수
+    clearConfirmationTimer() {
+        if (this._gestureConfirmTimer) {
+            this._gestureConfirmTimer.remove(false);
+            this._gestureConfirmTimer = null;
+        }
+        this._pendingChoiceIndex = -1;
+        // 선택 대기 중인 메시지 지우기 (선택이 취소되었을 때)
+        if (this.feedbackText && this._isGameActive) {
+            this.feedbackText.setText('').setVisible(false);
+        }
+    }
+
     resetGestureRecognition() {
+        this.clearConfirmationTimer(); // 제스처 리스너 제거 전 타이머 정리
         if(this._gestureListener) window.removeEventListener('finger-count', this._gestureListener);
         this._gestureListener = null;
         gestureRecognition.stop?.(); 
@@ -141,6 +190,7 @@ export default class FillBlankScene extends Phaser.Scene {
 
     loadNextQuestion() {
         this.resetGesture(); 
+        this.clearConfirmationTimer(); // 문제 로드 시 대기 중인 타이머 정리
 
         if (this._currentQuestionNumber >= this.maxQuestions || this._idiomPool.length === 0) {
             const allQuestionsDone = this._currentQuestionNumber >= this.maxQuestions;
@@ -162,7 +212,6 @@ export default class FillBlankScene extends Phaser.Scene {
 
                 this.time.delayedCall(3000, () => {
                     this.resetGame();
-                    // ⭐ [수정] targetScene 명시
                     this.scene.start("DifficultySelectScene", { targetScene: 'FillBlankScene' });
                 });
 
@@ -231,8 +280,10 @@ export default class FillBlankScene extends Phaser.Scene {
     }
 
     handleChoice(choiceIndex) {
+        // 타이머가 만료되어 최종적으로 선택하는 순간에도, 혹시 다른 선택이 들어왔을 수 있으니 다시 한 번 중복 확인
         if (this._gestureUsed) return; 
 
+        // 이 시점에서 최종 선택 확정
         this._gestureUsed = true; 
         
         if (!this._isGameActive) return; 
@@ -321,7 +372,6 @@ export default class FillBlankScene extends Phaser.Scene {
         this.resetGestureRecognition();
         
         this.time.delayedCall(500, () => {
-            // ⭐ [수정] targetScene 명시
             this.scene.start('DifficultySelectScene', { 
                 finalScore: this._currentScore,
                 targetScene: 'FillBlankScene' 
@@ -408,7 +458,6 @@ export default class FillBlankScene extends Phaser.Scene {
     .setInteractive({ useHandCursor: true })
     .on('pointerdown', () => {
         this.resetGame();
-        // ⭐ [수정] targetScene 명시
         this.scene.start('DifficultySelectScene', { 
             targetScene: 'FillBlankScene' 
         });
