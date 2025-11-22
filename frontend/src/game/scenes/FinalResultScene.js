@@ -118,8 +118,7 @@ export default class FinalResultScene extends Phaser.Scene {
 
         g.strokePath();
 
-        // 최대 체력 구하기
-        const maxHp = stats.reduce((max, s) => Math.max(max, s.maxHp || s.endHp || 0), 0) || 1;
+        
 
         // 데이터 라인
         const line = this.add.graphics();
@@ -128,7 +127,12 @@ export default class FinalResultScene extends Phaser.Scene {
         stats.forEach((s, index) => {
             const t = stats.length === 1 ? 0 : index / (stats.length - 1);
             const x = originX + t * graphWidth;
-            const ratio = (s.endHp || 0) / maxHp;
+
+            // 각 스테이지별 남은 체력 비율(%)
+            const maxHp = s.maxHp || 1;
+            const hpPercent = (s.endHp / maxHp) * 100;
+            const clampedPercent = Math.max(0, Math.min(100, hpPercent)); // 0~100 사이로 제한
+            const ratio = clampedPercent / 100; // 0~1
             const y = originY - ratio * graphHeight;
 
             if (index === 0) {
