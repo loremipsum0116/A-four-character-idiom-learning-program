@@ -27,7 +27,7 @@ export default class FillBlankScene extends Phaser.Scene {
     _currentLives = 0;
     _currentScore = 0; 
     _timeRemaining = 0;
-    _isGameActive = false; 
+    _isGameActive = false; // 제스처 처리 시에도 사용
     _hintUsed = false;
     _currentQuestionNumber = 0; 
     difficulty = 'EASY'; 
@@ -68,6 +68,9 @@ export default class FillBlankScene extends Phaser.Scene {
         
         this.updateUI();
         this.loadIdiomsAndStartGame();
+
+        // [제스처 인식] 전역 이벤트 리스너 등록
+        window.addEventListener("finger-count", this.handleFingerCountEvent);
     }
 
     update(time, delta) {
@@ -78,6 +81,22 @@ export default class FillBlankScene extends Phaser.Scene {
                 this.handleTimeout();
             }
             this.updateTimerDisplay();
+        }
+    }
+
+    // [제스처 인식] 전역 이벤트 리스너 핸들러
+    handleFingerCountEvent = (e) => {
+        // 게임이 활성화 상태(문제 풀이 중)가 아니거나, 선택지가 4개가 아니면 무시
+        if (!this._isGameActive || this.choiceButtons.length !== 4) return;
+
+        const count = Number(e.detail.count); // 1~4 (손가락 개수)
+        
+        // 1~4까지의 손가락 개수만 처리 (선택지 인덱스: 0~3)
+        if (count >= 1 && count <= 4) {
+            const choiceIndex = count - 1;
+            console.log(`Selected choice via finger-count: ${choiceIndex + 1} (${this._currentChoices[choiceIndex]})`);
+            // 제스처로 선택 시에도 마우스 클릭과 동일한 로직 호출
+            this.handleChoice(choiceIndex);
         }
     }
 
@@ -94,7 +113,6 @@ export default class FillBlankScene extends Phaser.Scene {
 
     loadNextQuestion() {
         
-
         if (this._currentQuestionNumber >= this.maxQuestions || this._idiomPool.length === 0) {
             const allQuestionsDone = this._currentQuestionNumber >= this.maxQuestions;
             const gameOver = this._currentLives <= 0;
@@ -110,6 +128,7 @@ export default class FillBlankScene extends Phaser.Scene {
                 this.meaningText.setVisible(false);
                 this.questionCountText.setVisible(false);
                 this.timerText.setVisible(false);
+                this._isGameActive = false; // 게임 오버 상태
 
                 this.time.delayedCall(3000, () => {
                 this.resetGame();
@@ -183,7 +202,7 @@ export default class FillBlankScene extends Phaser.Scene {
 
     handleChoice(choiceIndex) {
         if (!this._isGameActive) return;
-        this._isGameActive = false; 
+        this._isGameActive = false; // 선택 처리 시작 시 제스처 및 마우스 입력 차단
         this.enableChoices(false); 
 
         const selectedHanja = this._currentChoices[choiceIndex];
@@ -198,7 +217,7 @@ export default class FillBlankScene extends Phaser.Scene {
             this.handleIncorrectAnswer();
             const correctIndex = this._currentChoices.indexOf(this._correctAnswer);
             if (correctIndex !== -1) {
-                 this.choiceButtons[correctIndex].rect.fillColor = 0x60a5fa; 
+                   this.choiceButtons[correctIndex].rect.fillColor = 0x60a5fa; 
             }
         }
 
@@ -266,19 +285,51 @@ export default class FillBlankScene extends Phaser.Scene {
         }
         this.updateUI();
     }
+    
+    // [제스처 인식] shutdown 시 이벤트 리스너 제거 추가
+    shutdown() {
+        console.log('FillBlankScene shutdown. Removing finger-count listener.');
+        window.removeEventListener('finger-count', this.handleFingerCountEvent);
+    }
 
     endGame(isLost = false) {
         this._isGameActive = false;
         this.time.removeAllEvents();
-        this.choiceButtons.forEach(choice => choice.rect.removeAllListeners());
-        this.choiceButtons = [];
-        if (this.hintButton) this.hintButton.removeAllListeners();
+        
+        // shutdown에서 이벤트 리스너를 제거하므로 여기서는 제거하지 않습니다.
+        // this.choiceButtons.forEach(choice => choice.rect.removeAllListeners());
+        // this.choiceButtons = [];
+        // if (this.hintButton) this.hintButton.removeAllListeners();
+        
         if (this.hintButton) this.hintButton.setVisible(false);
     
         //난이도 선택 씬으로 이동
         this.time.delayedCall(500, () => {
             this.scene.start('DifficultySelectScene', { finalScore: this._currentScore });
         });
+    }
+
+    resetGame() {
+         // 게임 오버 후 재시작 또는 씬 이동 시 상태 초기화
+         this._idiomPool = []; 
+         this._currentIdiom = null; 
+         this._currentChoices = [];
+         this._correctAnswer = '';
+         this._blankPosition = -1; 
+         this._currentLives = 0;
+         this._currentScore = 0; 
+         this._timeRemaining = 0;
+         this._isGameActive = false; 
+         this._hintUsed = false;
+         this._currentQuestionNumber = 0; 
+
+         this.choiceButtons.forEach(choice => {
+            choice.rect.destroy();
+            choice.text.destroy();
+        });
+        this.choiceButtons = [];
+        if (this.hintButton) this.hintButton.destroy();
+        this.hintButton = null;
     }
 
 
@@ -348,11 +399,8 @@ export default class FillBlankScene extends Phaser.Scene {
     })
     .setInteractive({ useHandCursor: true })
     .on('pointerdown', () => {
-        this.time.removeAllEvents();
-        this.choiceButtons.forEach(choice => choice.rect.removeAllListeners());
-        this.choiceButtons = [];
-        if (this.hintButton) this.hintButton.removeAllListeners();
-
+        // 뒤로가기 시 게임 상태를 초기화하고 씬을 이동합니다.
+        this.resetGame();
         this.scene.start('DifficultySelectScene', { 
             targetScene: 'FillBlankScene' 
         });
@@ -360,11 +408,11 @@ export default class FillBlankScene extends Phaser.Scene {
     }
 
     createChoiceButtons() {
-         this.choiceButtons.forEach(choice => {
-        choice.rect.destroy();
-        choice.text.destroy();
-    });
-    this.choiceButtons = [];
+           this.choiceButtons.forEach(choice => {
+            choice.rect.destroy();
+            choice.text.destroy();
+        });
+        this.choiceButtons = [];
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
         const buttonWidth = 200;
@@ -386,6 +434,12 @@ export default class FillBlankScene extends Phaser.Scene {
                 color: '#ffffff',
                 fontStyle: 'bold'
             }).setOrigin(0.5);
+
+            // 선택지 번호 표시 (제스처 힌트)
+            this.add.text(x - buttonWidth / 2 + 10, startY - buttonHeight / 2 + 10, (i + 1).toString(), {
+                fontSize: '18px',
+                color: '#94a3b8'
+            });
 
             this.choiceButtons.push({ rect, text, index: i });
         }
