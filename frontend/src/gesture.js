@@ -4,6 +4,10 @@ let video, canvas, ctx, statusDiv;
 let handLandmarker;
 let lastFingerCount = -1;
 
+// 1초 지연 인식 변수
+let pendingFingerCount = null;
+let fingerTimer = null;
+
 export async function initGesture(parent = document.body) {
   if (!video) {
     video = document.createElement("video");
@@ -80,9 +84,6 @@ async function setupCamera() {
   await new Promise((r) => (video.onloadedmetadata = r));
 }
 
-/* ----------------------------
-  벡터 / 각도 계산 (동일)
------------------------------*/
 function vec(a, b) {
   return { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
 }
@@ -96,16 +97,15 @@ function angle(a, b) {
   return (Math.acos(dot(a, b) / (norm(a) * norm(b))) * 180) / Math.PI;
 }
 
-/* -----------------------------------
-  손가락 펴짐 정도 계산 (0~1)
------------------------------------*/
 function fingerExtended(lm, idx) {
   const mcp = lm[idx],
     pip = lm[idx + 1],
     dip = lm[idx + 2],
     tip = lm[idx + 3];
+
   const v1 = vec(mcp, pip),
     v2 = vec(dip, tip);
+
   const ang = angle(v1, v2);
   return Math.max(0, Math.min(1, (90 - ang) / 80));
 }
@@ -114,19 +114,17 @@ function thumbExtended(lm) {
   const v1 = vec(lm[1], lm[2]),
     v2 = vec(lm[3], lm[4]);
   const ang = angle(v1, v2);
+
   return Math.max(0, Math.min(1, (ang - 20) / 140));
 }
 
-/* -----------------------------------
-  손가락 개수 계산 (0~4)
------------------------------------*/
 function countFingers(lm) {
-  const i = fingerExtended(lm, 5);   // index
-  const m = fingerExtended(lm, 9);   // middle
-  const r = fingerExtended(lm, 13);  // ring
-  const p = fingerExtended(lm, 17);  // pinky
+  const i = fingerExtended(lm, 5);
+  const m = fingerExtended(lm, 9);
+  const r = fingerExtended(lm, 13);
+  const p = fingerExtended(lm, 17);
 
-  const TH = 0.5; // 임계값
+  const TH = 0.5;
 
   let count = 0;
   if (i > TH) count++;
@@ -137,9 +135,6 @@ function countFingers(lm) {
   return count;
 }
 
-/* -----------------------------------
-  메인 Detection 루프
------------------------------------*/
 function detectLoop() {
   if (!handLandmarker) return;
 
@@ -157,30 +152,38 @@ function detectLoop() {
       ctx.fill();
     });
 
-    // 계산된 손가락 개수
     const fingerCount = countFingers(lm);
 
-    if (fingerCount !== lastFingerCount) {
-      lastFingerCount = fingerCount;
+    // 🔥 1초 후 확정 (noise 무시)
+    if (pendingFingerCount !== fingerCount) {
+      pendingFingerCount = fingerCount;
 
-      statusDiv.textContent = "Finger: " + fingerCount;
-      console.log("Finger Count =", fingerCount);
-
-      // Phaser 게임으로 이벤트 전송 (1~4만)
-      if (fingerCount >= 1 && fingerCount <= 4) {
-        window.dispatchEvent(
-          new CustomEvent("finger-count", { detail: { count: fingerCount } })
-        );
+      if (fingerTimer) {
+        clearTimeout(fingerTimer);
       }
+
+      fingerTimer = setTimeout(() => {
+        lastFingerCount = pendingFingerCount;
+
+        statusDiv.textContent = "Finger: " + lastFingerCount;
+        console.log("Finger Count =", lastFingerCount);
+
+        if (lastFingerCount >= 1 && lastFingerCount <= 4) {
+          window.dispatchEvent(
+            new CustomEvent("finger-count", {
+              detail: { count: lastFingerCount },
+            })
+          );
+        }
+
+        fingerTimer = null;
+      }, 1000); // ← 1초
     }
   }
 
   requestAnimationFrame(detectLoop);
 }
 
-/* -----------------------------------
-  제거 함수 (동일)
------------------------------------*/
 export function removeGesture() {
   const elementsToRemove = [video, canvas, statusDiv];
 
