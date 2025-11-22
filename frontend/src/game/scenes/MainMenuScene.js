@@ -1,17 +1,7 @@
 import Phaser from 'phaser';
 import { clearGuestData, loadGameData } from '../../utils/storageManager.js';
-// 💡 [수정] removeGesture 함수를 새로 import 합니다.
 import { initGesture, removeGesture } from '../../gesture.js';
 
-/**
- * MainMenuScene - 메인 메뉴
- *
- * FR 2.1: 메인 화면
- * - 학습 모드
- * - 게임 모드 (보스전)
- * - 개인 기록
- * - 환경 설정
- */
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
     super({ key: 'MainMenuScene' });
@@ -28,8 +18,7 @@ export default class MainMenuScene extends Phaser.Scene {
     // 배경
     this.add.rectangle(width / 2, height / 2, width, height, 0x2d3561);
 
-    // 💡 [추가] 메인 메뉴 진입 시 제스처 카메라 비활성화/제거
-    // MainMenuScene은 제스처를 사용하지 않으므로, 화면에 남겨진 카메라 UI를 제거합니다.
+    // 제스처 제거
     if (typeof removeGesture === 'function') {
       removeGesture();
     }
@@ -41,26 +30,40 @@ export default class MainMenuScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    // 사용자 정보
+    // 유저 정보
     const nickname = this.userData.nickname || '게스트';
     this.add.text(width / 2, 140, `환영합니다, ${nickname}님!`, {
       fontSize: '24px',
       color: '#a5b4fc'
     }).setOrigin(0.5);
 
-    // 메뉴 버튼들
+    // 버튼 만들기
     this.createMenuButtons();
   }
 
   createMenuButtons() {
     const width = this.cameras.main.width;
     const centerX = width / 2;
-    const startY = 250;
-    const buttonGap = 100;
 
-    // ✅ 히든 보스 해금 여부 확인
-    const isHiddenUnlocked = loadGameData('hiddenBossUnlocked', 'false') === 'true';
+    // 🔓 해금 여부 로드
+    // 무한 모드도 히든 보스전과 동일하게 해금 조건(hiddenBossUnlocked)을 공유합니다.
+    const hiddenUnlocked = loadGameData('hiddenBossUnlocked', 'false') === 'true';
+    
+    // 이전에 사용된 infiniteUnlocked 변수 정의는 제거되었습니다.
+    // const infiniteUnlocked = loadGameData('infiniteModeUnlocked', 'false') === 'true';
 
+    // 공통 해금 처리 함수
+    const lockedButton = (unlocked, labelUnlocked, labelLocked, scene, descUnlocked, descLocked) => {
+      return {
+        text: unlocked ? labelUnlocked : labelLocked,
+        color: unlocked ? 0xffa500 : 0x6b7280,
+        hoverColor: unlocked ? 0xffc72c : 0x6b7280,
+        scene: unlocked ? scene : null,
+        description: unlocked ? descUnlocked : descLocked
+      };
+    };
+
+    // 버튼 리스트 (히든/무한 둘 다 통일 로직)
     const buttons = [
       {
         text: '📚 학습 모드',
@@ -76,14 +79,27 @@ export default class MainMenuScene extends Phaser.Scene {
         scene: 'StageSelectScene',
         description: '12지신과 턴제 전투를 합니다'
       },
-      // 💡 [추가] 무한 모드 버튼 추가
-      {
-        text: '♾️ 무한 모드',
-        color: 0xffa500, // 주황색 계열
-        hoverColor: 0xffc72c,
-        scene: 'InfiniteModeScene',
-        description: '끝없이 도전하며 기록을 세웁니다'
-      },
+
+      // 🕶️ 히든보스 — 통일된 해금 UI
+      lockedButton(
+        hiddenUnlocked,
+        '🕶️ 히든 보스전',
+        '🔒 히든 보스전',
+        'HiddenBossScene',
+        '???와 1:1 대결을 펼칩니다',
+        '모든 보스전을 클리어하면 해금됩니다'
+      ),
+
+      // ♾️ 무한 모드 — 통일된 해금 UI
+      lockedButton(
+        hiddenUnlocked, // <<< infiniteUnlocked 대신 hiddenUnlocked 사용
+        '♾️ 무한 모드',
+        '🔒 무한 모드',
+        'InfiniteModeScene',
+        '끝없이 도전하며 기록을 세웁니다',
+        '모든 게임 모드를 클리어하면 해금됩니다'
+      ),
+
       {
         text: '📊 개인 기록',
         color: 0x3b82f6,
@@ -100,46 +116,29 @@ export default class MainMenuScene extends Phaser.Scene {
       }
     ];
 
-      // ✅ 히든 보스 해금 시에만 버튼 추가 (보스전/무한 모드 사이에 끼워넣기)
-      if (isHiddenUnlocked) {
-          buttons.splice(2, 0, {
-              text: '🕶️ 히든 보스전',
-              color: 0x8b5cf6,
-              hoverColor: 0xa855f7,
-              scene: 'HiddenBossScene',
-              description: '???와 1:1 대결을 펼칩니다'
-          });
-      }
-
-    
-
+    // 버튼 렌더링
     buttons.forEach((btn, index) => {
-      // 💡 [수정] 무한 모드 추가로 인해 시작 y 좌표와 간격 계산 수정
-      // 버튼 수가 4개에서 5개로 늘었으므로 버튼 위치를 조정하여 중앙에 배치합니다.
-      const adjustedStartY = 200; // 시작 위치를 조금 올립니다
-      const y = adjustedStartY + (index * 80); // 간격을 좁힙니다
+      const adjustedStartY = 200;
+      const y = adjustedStartY + index * 80;
 
-      // 버튼 배경
-      const button = this.add.rectangle(centerX, y, 500, 70, btn.color)
+      const rect = this.add.rectangle(centerX, y, 500, 70, btn.color)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.onButtonClick(btn.scene))
         .on('pointerover', () => {
-          button.setFillStyle(btn.hoverColor);
+          rect.setFillStyle(btn.hoverColor);
           desc.setAlpha(1);
         })
         .on('pointerout', () => {
-          button.setFillStyle(btn.color);
+          rect.setFillStyle(btn.color);
           desc.setAlpha(0.7);
         });
 
-      // 버튼 텍스트
       this.add.text(centerX, y - 10, btn.text, {
         fontSize: '24px',
         color: '#ffffff',
         fontStyle: 'bold'
       }).setOrigin(0.5);
 
-      // 설명 텍스트
       const desc = this.add.text(centerX, y + 15, btn.description, {
         fontSize: '14px',
         color: '#e5e7eb',
@@ -147,11 +146,12 @@ export default class MainMenuScene extends Phaser.Scene {
       }).setOrigin(0.5);
     });
 
-    // 로그아웃 버튼
+    // 로그아웃
     const logoutBtn = this.add.text(width - 20, 20, '로그아웃', {
       fontSize: '18px',
       color: '#94a3b8'
-    }).setOrigin(1, 0)
+    })
+      .setOrigin(1, 0)
       .setInteractive({ useHandCursor: true })
       .on('pointerdown', () => this.logout())
       .on('pointerover', () => logoutBtn.setColor('#ef4444'))
@@ -159,19 +159,21 @@ export default class MainMenuScene extends Phaser.Scene {
   }
 
   onButtonClick(sceneName) {
-    if(!sceneName) {
-      console.log('⚙️ 설정 기능은 준비 중입니다');
+    // 🔒 잠겨 있을 때
+    if (!sceneName) {
+      console.log('🔒 아직 해금되지 않은 모드입니다!');
       return;
     }
 
-    console.log(`🎮 ${sceneName}으로 이동`);
+    console.log(`🎮 ${sceneName} 이동`);
 
-    // 학습 모드, 게임 모드, 무한 모드에서만 Gesture 초기화
-      if (sceneName === 'LearningModeScene' ||
-          sceneName === 'StageSelectScene' ||
-          sceneName === 'InfiniteModeScene' ||
-          sceneName === 'HiddenBossScene'
-      ) {
+    // 제스처 필요한 씬
+    if (
+      sceneName === 'LearningModeScene' ||
+      sceneName === 'StageSelectScene' ||
+      sceneName === 'InfiniteModeScene' ||
+      sceneName === 'HiddenBossScene'
+    ) {
       const container = document.getElementById('game-container');
       initGesture(container);
     }
@@ -181,14 +183,12 @@ export default class MainMenuScene extends Phaser.Scene {
 
   logout() {
     console.log('🚪 로그아웃');
-    // 게스트 데이터 삭제 (게스트 모드인 경우)
     clearGuestData();
-    
-    // 💡 [추가] 로그아웃 후 LoginScene으로 이동 시 제스처 카메라 비활성화/제거
+
     if (typeof removeGesture === 'function') {
       removeGesture();
     }
-    
+
     this.scene.start('LoginScene');
   }
 }
