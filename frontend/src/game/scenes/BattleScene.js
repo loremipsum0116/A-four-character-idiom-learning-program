@@ -1184,25 +1184,26 @@ export default class BattleScene extends Phaser.Scene {
   // HP 바 업데이트
   // ======================
 
-  updatePlayerHP() {
-    const ratio = this.playerHP / this.playerMaxHP;
+updatePlayerHP() {
+    const newWidth = 200 * (this.playerHP / this.playerMaxHP);
     this.tweens.add({
-      targets: this.playerHPBar,
-      scaleX: ratio,
-      duration: 500
+        targets: this.playerHPBar,
+        width: newWidth,
+        duration: 500
     });
     this.playerHPText.setText(`${this.playerHP}/${this.playerMaxHP}`);
-  }
+}
 
-  updateBossHP() {
-    const ratio = this.bossHP / this.bossMaxHP;
+updateBossHP() {
+    const newWidth = 200 * (this.bossHP / this.bossMaxHP);
     this.tweens.add({
-      targets: this.bossHPBar,
-      scaleX: ratio,
-      duration: 500
+        targets: this.bossHPBar,
+        width: newWidth,
+        duration: 500
     });
     this.bossHPText.setText(`${this.bossHP}/${this.bossMaxHP}`);
-  }
+}
+
 
   // ======================
   // 전투 종료
