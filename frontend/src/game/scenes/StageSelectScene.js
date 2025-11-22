@@ -243,6 +243,9 @@ export default class StageSelectScene extends Phaser.Scene {
 
     // 게임 데이터에 클리어 상태 저장
     saveGameData('maxClearedStage', maxStageId.toString());
+
+    // 디버그로도 전체 클리어하면 히든 보스 해금
+    saveGameData('hiddenBossUnlocked', 'true');
     
     console.log(`🏆 디버그: 모든 스테이지 (${maxStageId}) 클리어 처리 완료`);
 

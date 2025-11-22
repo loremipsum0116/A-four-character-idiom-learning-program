@@ -509,7 +509,16 @@ showFullDialogue() {
    * 전투 시작 대사
    */
   async showBattleStartDialogue() {
-    this.showMessage(`${this.stageData.name} 보스와의 전투를 시작합니다!`);
+      this.showMessage(`${this.stageData.name} 보스와의 전투를 시작합니다!`);
+
+
+      // 🔒 히든 보스(??? / id 99)는 Gemini 대사 대신 항상 "..."
+      if (this.stageData.id === 99 || this.stageData.name === '???') {
+          await this.showDialogue('...', 3000, true);
+          // 대사 끝나고 바로 플레이어 턴 시작
+          this.time.delayedCall(500, () => this.startPlayerTurn());
+          return;
+      }
 
     try {
       const dialogue = await geminiService.getBattleStartDialogue(
@@ -551,7 +560,14 @@ showFullDialogue() {
    * 보스 공격 대사
    */
   async showBossAttackDialogue() {
-    try {
+
+      if (this.stageData.id === 99 || this.stageData.name === '???') {
+          await this.showDialogue('...', 2000, true);
+          return;
+      }
+
+
+      try {
       const dialogue = await geminiService.getBossAttackDialogue(
         this.stageData.name,
         this.lionLevel.name
@@ -568,7 +584,13 @@ showFullDialogue() {
    * 승리 대사
    */
   async showVictoryDialogueText() {
-    try {
+
+      if (this.stageData.id === 99 || this.stageData.name === '???') {
+          await this.showDialogue('...', 3000, true);
+          return;
+      }
+
+      try {
       const dialogue = await geminiService.getVictoryDialogue(
         this.stageData.name,
         this.lionLevel.name,
@@ -596,7 +618,14 @@ showFullDialogue() {
    * 패배 대사
    */
   async showDefeatDialogueText() {
-    try {
+
+      // 🔒 히든 보스에게 패배했을 때도 보스는 "..."만
+      if (this.stageData.id === 99 || this.stageData.name === '???') {
+          await this.showDialogue('...', 3000, true);
+          return;
+      }
+
+      try {
       const dialogue = await geminiService.getDefeatDialogue(
         this.stageData.name,
         this.lionLevel.name
@@ -1488,6 +1517,10 @@ updateBossHP() {
                 if (stages.length > 0) {
                     const lastId = stages[stages.length - 1].id;
                     isFinalStage = this.stageData.id === lastId;
+                }
+
+                if (isFinalStage && isVictory) {
+                    saveGameData('hiddenBossUnlocked', 'true');
                 }
 
                 // 마지막 스테이지면 최종 결과 화면으로, 아니면 기존대로 스테이지 선택

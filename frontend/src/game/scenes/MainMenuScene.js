@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { clearGuestData } from '../../utils/storageManager.js';
+import { clearGuestData, loadGameData } from '../../utils/storageManager.js';
 // 💡 [수정] removeGesture 함수를 새로 import 합니다.
 import { initGesture, removeGesture } from '../../gesture.js';
 
@@ -58,6 +58,9 @@ export default class MainMenuScene extends Phaser.Scene {
     const startY = 250;
     const buttonGap = 100;
 
+    // ✅ 히든 보스 해금 여부 확인
+    const isHiddenUnlocked = loadGameData('hiddenBossUnlocked', 'false') === 'true';
+
     const buttons = [
       {
         text: '📚 학습 모드',
@@ -96,6 +99,19 @@ export default class MainMenuScene extends Phaser.Scene {
         description: '사운드, 알림 등 설정'
       }
     ];
+
+      // ✅ 히든 보스 해금 시에만 버튼 추가 (보스전/무한 모드 사이에 끼워넣기)
+      if (isHiddenUnlocked) {
+          buttons.splice(2, 0, {
+              text: '🕶️ 히든 보스전',
+              color: 0x8b5cf6,
+              hoverColor: 0xa855f7,
+              scene: 'HiddenBossScene',
+              description: '???와 1:1 대결을 펼칩니다'
+          });
+      }
+
+    
 
     buttons.forEach((btn, index) => {
       // 💡 [수정] 무한 모드 추가로 인해 시작 y 좌표와 간격 계산 수정
@@ -151,7 +167,11 @@ export default class MainMenuScene extends Phaser.Scene {
     console.log(`🎮 ${sceneName}으로 이동`);
 
     // 학습 모드, 게임 모드, 무한 모드에서만 Gesture 초기화
-    if(sceneName === 'LearningModeScene' || sceneName === 'StageSelectScene' || sceneName === 'InfiniteModeScene') {
+      if (sceneName === 'LearningModeScene' ||
+          sceneName === 'StageSelectScene' ||
+          sceneName === 'InfiniteModeScene' ||
+          sceneName === 'HiddenBossScene'
+      ) {
       const container = document.getElementById('game-container');
       initGesture(container);
     }
