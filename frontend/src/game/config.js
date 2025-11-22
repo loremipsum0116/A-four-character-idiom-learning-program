@@ -18,6 +18,8 @@ import BookScene from './scenes/learning/BookScene.js';
 import FinalResultScene from './scenes/FinalResultScene.js';
 // 💡 [추가] InfiniteModeScene 임포트
 import InfiniteModeScene from './scenes/InfiniteMode.js';
+// 히든 보스 추가 임포트
+import HiddenBossScene from './scenes/HiddenBossScene.js';
 
 
 
@@ -59,7 +61,8 @@ export const gameConfig = {
     EndingScene,      // FR 5.1 - 엔딩
     PvPScene,          // FR 5.5 - PvP
     FinalResultScene,  // 최종 결과 씬
-    InfiniteModeScene // 💡 [추가] 무한 모드 씬
+    InfiniteModeScene, // 💡 [추가] 무한 모드 씬
+    HiddenBossScene   // 히든 보스 씬
   ],
   render: {
     pixelArt: false,
