@@ -15,6 +15,7 @@ import FillBlankScene from './scenes/learning/FillBlankScene.js';
 import DifficultySelectScene from './scenes/learning/DifficultySelectScene.js';
 import CardMatchScene from './scenes/learning/CardMatchScene.js';
 import BookScene from './scenes/learning/BookScene.js';
+import FinalResultScene from './scenes/FinalResultScene.js';
 
 
 
@@ -54,7 +55,8 @@ export const gameConfig = {
     BattleScene,      // FR 4.0 - 턴제 전투 (핵심)
     StatisticsScene,  // FR 6.0 - 통계
     EndingScene,      // FR 5.1 - 엔딩
-    PvPScene          // FR 5.5 - PvP
+    PvPScene,          // FR 5.5 - PvP
+    FinalResultScene  // 최종 결과 씬
   ],
   render: {
     pixelArt: false,
