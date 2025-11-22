@@ -76,7 +76,7 @@ export default class BattleScene extends Phaser.Scene {
     }
   }
 
-  create() {
+create() {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
@@ -92,26 +92,43 @@ export default class BattleScene extends Phaser.Scene {
 
     // 전투 시작 대사 출력
     this.showBattleStartDialogue();
+
     window.addEventListener("finger-count", (e) => {
-  const count = e.detail.count;  // 1~4
+      const count = e.detail.count;  // 1~4
 
-  // 보기 개수보다 큰 경우 무시
-  if (!this.quizButtons || count > this.quizButtons.length) return;
+      // 1. 난이도 선택 단계 처리
+      if (this.turnPhase === 'SELECT_DIFFICULTY' && this.difficultyButtons) {
+        // 손가락과 난이도 매칭: 1 → EASY(index 0), 2 → MEDIUM(index 1), 3 → HARD(index 2)
+        const selectedIndex = count - 1;
 
-  // 손가락과 보기 번호 매칭: 1 → index 0, 2 → index 1 ...
-  const selectedIndex = count - 1;
+        // 1, 2, 3 손가락만 난이도 선택에 사용 (버튼 개수 = 3)
+        if (selectedIndex >= 0 && selectedIndex < this.difficultyButtons.length) {
+          const difficulties = ['EASY', 'MEDIUM', 'HARD'];
+          const selectedDifficultyKey = difficulties[selectedIndex];
+          console.log(`☝️ 제스처 입력: 손가락 ${count}개 → 난이도 ${selectedDifficultyKey} 선택`);
+          this.selectDifficulty(selectedDifficultyKey);
+          // 난이도 선택 후에는 퀴즈 선택 로직을 실행하지 않기 위해 return
+          return; 
+        }
+      }
 
-  // 공격 퀴즈일 때
-  if (this.currentQuizType === "attack") {
-    this.submitAnswer(selectedIndex);
-  }
+      // 2. 퀴즈 보기 선택 단계 처리
+      // 난이도 선택 단계가 아니면서, 퀴즈 버튼이 존재하고, 손가락 개수가 유효할 때 실행
+      if (!this.quizButtons || count > this.quizButtons.length) return;
 
-  // 방어 퀴즈일 때
-  if (this.currentQuizType === "defense") {
-    this.submitDefenseAnswer(selectedIndex);
-  }
-});
+      // 손가락과 보기 번호 매칭: 1 → index 0, 2 → index 1 ...
+      const selectedIndex = count - 1;
 
+      // 공격 퀴즈일 때
+      if (this.currentQuizType === "attack") {
+        this.submitAnswer(selectedIndex);
+      }
+
+      // 방어 퀴즈일 때
+      if (this.currentQuizType === "defense") {
+        this.submitDefenseAnswer(selectedIndex);
+      }
+    });
   }
 
   // ======================

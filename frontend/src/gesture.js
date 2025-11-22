@@ -43,6 +43,7 @@ export async function initGesture(parent = document.body) {
     canvas.style.border = "2px solid white";
     canvas.style.borderRadius = "8px";
     canvas.style.zIndex = "11";
+    canvas.style.display = "none"; // 초기 숨김
     parent.appendChild(canvas);
 
     statusDiv = document.createElement("div");
@@ -56,6 +57,7 @@ export async function initGesture(parent = document.body) {
     statusDiv.style.color = "white";
     statusDiv.style.textShadow = "2px 2px 5px black";
     statusDiv.style.zIndex = "12";
+    statusDiv.style.display = "none"; // 초기 숨김
     parent.appendChild(statusDiv);
 
     ctx = canvas.getContext("2d");
@@ -115,7 +117,6 @@ function thumbExtended(lm) {
   const mcp = lm[2]; // 엄지 MCP
   const tip = lm[4]; // 엄지 TIP
 
-  // 손바닥 중심
   const palmCenter = {
     x: (lm[0].x + lm[5].x + lm[9].x + lm[13].x + lm[17].x) / 5,
     y: (lm[0].y + lm[5].y + lm[9].y + lm[13].y + lm[17].y) / 5,
@@ -126,26 +127,21 @@ function thumbExtended(lm) {
   const v_palm = vec(mcp, palmCenter);
 
   const ang = angle(v_thumb, v_palm);
+  const distToIndex = norm(vec(tip, lm[5]));
+  const THRESHOLD_DIST = 0.12;
 
-  // 엄지가 검지 MCP 쪽에 일정 거리 이하로 붙으면 접힘
-  const distToIndex = norm(vec(tip, lm[5])); // TIP과 검지 MCP 거리
-  const THRESHOLD_DIST = 0.12; // 조금만 붙어도 접힘 처리, 기존 0.05 → 0.12
-
-  if (distToIndex < THRESHOLD_DIST) return 0; // 접힘
-  return ang > 50 ? 1 : 0; // 각도가 크면 펴짐, 작으면 접힘
+  if (distToIndex < THRESHOLD_DIST) return 0;
+  return ang > 50 ? 1 : 0;
 }
-
 
 // 손가락 개수 계산
 function countFingers(lm) {
   const TH = 0.5;
-
   const thumb = thumbExtended(lm);
   const i = fingerExtended(lm, 5) > TH ? 1 : 0;
   const m = fingerExtended(lm, 9) > TH ? 1 : 0;
   const r = fingerExtended(lm, 13) > TH ? 1 : 0;
   const p = fingerExtended(lm, 17) > TH ? 1 : 0;
-
   return thumb + i + m + r + p;
 }
 
@@ -162,6 +158,11 @@ function drawHandSkeleton(lm) {
   });
 }
 
+// 손 전체가 화면 안에 있는지 체크
+function isHandFullyVisible(lm) {
+  return lm.every(p => p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1);
+}
+
 function detectLoop() {
   if (!handLandmarker) return;
 
@@ -171,34 +172,52 @@ function detectLoop() {
   if (results && results.landmarks && results.landmarks[0]) {
     const lm = results.landmarks[0];
 
-    drawHandSkeleton(lm);
+    if (isHandFullyVisible(lm)) {
+      // 손 전체가 보이면 캔버스와 상태 표시
+      canvas.style.display = "block";
+      statusDiv.style.display = "block";
 
-    lm.forEach((p) => {
-      ctx.beginPath();
-      ctx.arc(p.x * canvas.width, p.y * canvas.height, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "red";
-      ctx.fill();
-    });
+      drawHandSkeleton(lm);
 
-    const fingerCount = countFingers(lm);
+      lm.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x * canvas.width, p.y * canvas.height, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+      });
 
-    if (pendingFingerCount !== fingerCount) {
-      pendingFingerCount = fingerCount;
+      const fingerCount = countFingers(lm);
 
+      if (pendingFingerCount !== fingerCount) {
+        pendingFingerCount = fingerCount;
+
+        if (fingerTimer) clearTimeout(fingerTimer);
+
+        fingerTimer = setTimeout(() => {
+          statusDiv.textContent = "Finger: " + pendingFingerCount;
+
+          window.dispatchEvent(
+            new CustomEvent("finger-count", {
+              detail: { count: pendingFingerCount },
+            })
+          );
+
+          fingerTimer = null;
+        }, 1000);
+      }
+    } else {
+      // 손이 일부만 보이면 숨김 처리
+      canvas.style.display = "none";
+      statusDiv.style.display = "none";
+      pendingFingerCount = null;
       if (fingerTimer) clearTimeout(fingerTimer);
-
-      fingerTimer = setTimeout(() => {
-        statusDiv.textContent = "Finger: " + pendingFingerCount;
-
-        window.dispatchEvent(
-          new CustomEvent("finger-count", {
-            detail: { count: pendingFingerCount },
-          })
-        );
-
-        fingerTimer = null;
-      }, 1000);
     }
+  } else {
+    // 손이 안 보이면 숨김 처리
+    canvas.style.display = "none";
+    statusDiv.style.display = "none";
+    pendingFingerCount = null;
+    if (fingerTimer) clearTimeout(fingerTimer);
   }
 
   requestAnimationFrame(detectLoop);
