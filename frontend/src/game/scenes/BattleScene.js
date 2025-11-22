@@ -55,6 +55,21 @@ export default class BattleScene extends Phaser.Scene {
     // 보스 이미지 로드
     if (this.stageData && this.stageData.image) {
       this.load.image(`boss_${this.stageData.id}`, this.stageData.image);
+
+      // 보스 공격/피격 이미지 로드 (a.png: 피격, b.png: 공격)
+      // 예: /pictures/rabbit.png -> /pictures/rabbit/a.png
+      const imagePath = this.stageData.image;
+      const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1); // rabbit.png
+      const animalName = fileName.replace('.png', ''); // rabbit
+      const folderPath = imagePath.substring(0, imagePath.lastIndexOf('/')); // /pictures
+
+      const bossAttackImage = `${folderPath}/${animalName}/b.png`; // 공격: b.png
+      const bossHurtImage = `${folderPath}/${animalName}/a.png`;   // 피격: a.png
+
+      this.load.image(`boss_${this.stageData.id}_attack`, bossAttackImage);
+      this.load.image(`boss_${this.stageData.id}_hurt`, bossHurtImage);
+
+      console.log(`👹 보스 이미지 로드: 기본(${imagePath}), 공격(${bossAttackImage}), 피격(${bossHurtImage})`);
     }
 
     // 사자 이미지 로드 (레벨별로 고유 키 사용)
@@ -71,6 +86,27 @@ export default class BattleScene extends Phaser.Scene {
 
       // 현재 사용할 키 저장
       this.currentLionKey = lionKey;
+
+      // 사자 공격/피격 이미지 로드 (a.png: 피격, b.png: 공격)
+      const lionImagePath = this.lionLevel.image;
+      const lionFileName = lionImagePath.substring(lionImagePath.lastIndexOf('/') + 1);
+      const lionName = lionFileName.replace('.png', '');
+      const lionFolderPath = lionImagePath.substring(0, lionImagePath.lastIndexOf('/'));
+
+      const lionAttackImage = `${lionFolderPath}/${lionName}/b.png`; // 공격: b.png
+      const lionHurtImage = `${lionFolderPath}/${lionName}/a.png`;   // 피격: a.png
+
+      const lionAttackKey = `${lionKey}_attack`;
+      const lionHurtKey = `${lionKey}_hurt`;
+
+      if (!this.textures.exists(lionAttackKey)) {
+        this.load.image(lionAttackKey, lionAttackImage);
+      }
+      if (!this.textures.exists(lionHurtKey)) {
+        this.load.image(lionHurtKey, lionHurtImage);
+      }
+
+      console.log(`🦁 사자 액션 이미지 로드: 공격(${lionAttackImage}), 피격(${lionHurtImage})`);
     } else {
       console.error('❌ lionLevel이 설정되지 않았습니다!', this.lionLevel);
     }
@@ -780,7 +816,7 @@ export default class BattleScene extends Phaser.Scene {
 
       this.showQuiz();
     } catch (error) {
-      console.error('퀴즈 로드 실패:', error);
+      console.log('📚 백엔드 미연결 - Mock 데이터 사용');
       // API 실패 시 임시 퀴즈 사용
       this.currentQuiz = this.generateMockQuiz();
       this.showQuiz();
@@ -815,6 +851,44 @@ export default class BattleScene extends Phaser.Scene {
     ];
 
     return mockIdioms[Math.floor(Math.random() * mockIdioms.length)];
+  }
+
+  generateMockHanjaQuiz() {
+    // API 실패 시 사용할 임시 한자 빈칸 퀴즈
+    const mockHanjaQuizzes = [
+      {
+        idiomId: 1,
+        question: '一_二鳥 (일석이조)',
+        fullHanja: '一石二鳥',
+        hangul: '일석이조',
+        blankPosition: 1,
+        choices: ['石', '木', '水', '火'],
+        answer: 0,
+        meaning: '돌 하나로 새 두 마리를 잡는다'
+      },
+      {
+        idiomId: 2,
+        question: '以心_心 (이심전심)',
+        fullHanja: '以心傳心',
+        hangul: '이심전심',
+        blankPosition: 2,
+        choices: ['傳', '轉', '全', '天'],
+        answer: 0,
+        meaning: '마음에서 마음으로 전한다'
+      },
+      {
+        idiomId: 3,
+        question: '四面_歌 (사면초가)',
+        fullHanja: '四面楚歌',
+        hangul: '사면초가',
+        blankPosition: 2,
+        choices: ['楚', '草', '初', '處'],
+        answer: 0,
+        meaning: '사방에서 적에게 포위되다'
+      }
+    ];
+
+    return mockHanjaQuizzes[Math.floor(Math.random() * mockHanjaQuizzes.length)];
   }
 
   showQuiz() {
@@ -1049,24 +1123,27 @@ export default class BattleScene extends Phaser.Scene {
         defenseDifficulty = Math.random() < 0.5 ? 'MEDIUM' : 'HARD';
       }
 
-      const quizData = await apiClient.getBlankQuiz(defenseDifficulty);
+      // 한자 빈칸 채우기 퀴즈 사용
+      const quizData = await apiClient.getHanjaBlankQuiz(defenseDifficulty);
 
       this.currentQuiz = {
         idiomId: quizData.idiomId,
         question: quizData.question,
         choices: quizData.choices,
         answer: quizData.answer,
-        hanja: quizData.hanja,
-        hangul: quizData.hangul
+        fullHanja: quizData.fullHanja,
+        hangul: quizData.hangul,
+        blankPosition: quizData.blankPosition,
+        meaning: quizData.meaning
       };
 
-      console.log(`🛡️ 방어 문제 (난이도: ${defenseDifficulty}):`, this.currentQuiz);
+      console.log(`🛡️ 방어 문제 (난이도: ${defenseDifficulty}, 한자 빈칸):`, this.currentQuiz);
 
       this.showDefenseQuiz();
     } catch (error) {
-      console.error('방어 퀴즈 로드 실패:', error);
+      console.log('🛡️ 백엔드 미연결 - Mock 한자 퀴즈 사용');
       // API 실패 시 임시 퀴즈 사용
-      this.currentQuiz = this.generateMockQuiz();
+      this.currentQuiz = this.generateMockHanjaQuiz();
       this.showDefenseQuiz();
     } finally {
       this.isProcessing = false;
@@ -1075,31 +1152,64 @@ export default class BattleScene extends Phaser.Scene {
 
   showDefenseQuiz() {
     this.quizStartTime = Date.now();
-    this.showMessage(`🛡️ 방어 문제: ${this.currentQuiz.question}`);
-
-    // 보기 버튼들 (공격 턴과 동일)
     const width = this.cameras.main.width;
-    const startY = 250;
-    const gap = 60;
+
+    // 문제 문구
+    this.showMessage(`🛡️ 방어 문제: 빈칸에 들어갈 알맞은 한자를 고르세요!`);
+
+    // 한자 문제 큰 글씨로 표시 (중앙 상단)
+    const questionText = this.add.text(width / 2, 200, this.currentQuiz.question, {
+      fontSize: '48px',
+      color: '#fbbf24',
+      fontStyle: 'bold',
+      align: 'center'
+    }).setOrigin(0.5);
+    questionText.setData('quizElement', true);
+
+    // 뜻 표시 (작은 글씨)
+    if (this.currentQuiz.meaning) {
+      const meaningText = this.add.text(width / 2, 260, this.currentQuiz.meaning, {
+        fontSize: '18px',
+        color: '#a5b4fc',
+        align: 'center'
+      }).setOrigin(0.5);
+      meaningText.setData('quizElement', true);
+    }
+
+    // 보기 버튼들 (한자 선택)
+    const startY = 320;
+    const buttonWidth = 120;
+    const buttonHeight = 120;
+    const gap = 40;
+
+    // 4개의 선택지를 2x2로 배치
+    const positions = [
+      { x: width / 2 - buttonWidth / 2 - gap / 2, y: startY },
+      { x: width / 2 + buttonWidth / 2 + gap / 2, y: startY },
+      { x: width / 2 - buttonWidth / 2 - gap / 2, y: startY + buttonHeight + gap },
+      { x: width / 2 + buttonWidth / 2 + gap / 2, y: startY + buttonHeight + gap }
+    ];
 
     this.quizButtons = [];
 
     this.currentQuiz.choices.forEach((choice, index) => {
-      const y = startY + (index * gap);
+      const pos = positions[index];
 
-      const button = this.add.rectangle(width / 2, y, 600, 50, 0x334155)
+      const button = this.add.rectangle(pos.x, pos.y, buttonWidth, buttonHeight, 0x334155)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => this.submitDefenseAnswer(index))
         .on('pointerover', () => button.setFillStyle(0x475569))
         .on('pointerout', () => button.setFillStyle(0x334155));
 
-      button.setStrokeStyle(2, 0x10b981);
+      button.setStrokeStyle(3, 0x10b981);
       button.setData('quizElement', true);
 
-      const choiceText = this.add.text(width / 2 - 280, y, `${index + 1}. ${choice}`, {
-        fontSize: '18px',
-        color: '#ffffff'
-      }).setOrigin(0, 0.5);
+      // 한자를 큰 글씨로 표시
+      const choiceText = this.add.text(pos.x, pos.y, choice, {
+        fontSize: '60px',
+        color: '#ffffff',
+        fontStyle: 'bold'
+      }).setOrigin(0.5);
 
       choiceText.setData('quizElement', true);
 
@@ -1353,10 +1463,17 @@ export default class BattleScene extends Phaser.Scene {
    */
   playBossAttackAnimation(onComplete) {
     const originalX = this.bossSprite.x;
+    const originalTexture = `boss_${this.stageData.id}`;
+    const attackTexture = `boss_${this.stageData.id}_attack`;
 
     // Idle 애니메이션 중지
     if (this.idleTween) {
       this.idleTween.pause();
+    }
+
+    // 공격 이미지로 변경
+    if (this.textures.exists(attackTexture)) {
+      this.bossSprite.setTexture(attackTexture);
     }
 
     // 공격 준비 (뒤로 살짝)
@@ -1364,7 +1481,7 @@ export default class BattleScene extends Phaser.Scene {
       targets: this.bossSprite,
       x: originalX + 30,
       scaleX: 0.32,
-      duration: 200,
+      duration: 400,
       ease: 'Power2',
       onComplete: () => {
         // 돌진!
@@ -1372,7 +1489,7 @@ export default class BattleScene extends Phaser.Scene {
           targets: this.bossSprite,
           x: originalX - 150,
           scaleX: 0.35,
-          duration: 300,
+          duration: 600,
           ease: 'Power2',
           onComplete: () => {
             // 흔들림 효과
@@ -1383,9 +1500,14 @@ export default class BattleScene extends Phaser.Scene {
               targets: this.bossSprite,
               x: originalX,
               scaleX: 0.3,
-              duration: 400,
+              duration: 800,
               ease: 'Back.easeOut',
               onComplete: () => {
+                // 원래 이미지로 복귀
+                if (this.textures.exists(originalTexture)) {
+                  this.bossSprite.setTexture(originalTexture);
+                }
+
                 if (this.idleTween) {
                   this.idleTween.resume();
                 }
@@ -1404,22 +1526,31 @@ export default class BattleScene extends Phaser.Scene {
    */
   playPlayerAttackAnimation(onComplete) {
     const originalX = this.playerSprite.x;
-    const originalScale = this.playerSprite.style?.fontSize || 1;
+    const attackTexture = `${this.currentLionKey}_attack`;
+
+    // 공격 이미지로 변경
+    if (this.textures.exists(attackTexture)) {
+      this.playerSprite.setTexture(attackTexture);
+    }
 
     // 돌진!
     this.tweens.add({
       targets: this.playerSprite,
       x: originalX + 100,
-      duration: 200,
+      duration: 400,
       ease: 'Power2',
       onComplete: () => {
         // 원위치
         this.tweens.add({
           targets: this.playerSprite,
           x: originalX,
-          duration: 300,
+          duration: 600,
           ease: 'Back.easeOut',
           onComplete: () => {
+            // 원래 이미지로 복귀
+            if (this.textures.exists(this.currentLionKey)) {
+              this.playerSprite.setTexture(this.currentLionKey);
+            }
             if (onComplete) onComplete();
           }
         });
@@ -1428,40 +1559,46 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   /**
-   * 피격 애니메이션 - 빨간색 깜빡임 + 뒤로 밀림
+   * 피격 애니메이션 - 뒤로 밀림 + 이미지 변경
    * @param {Phaser.GameObjects.Sprite} target - 피격 대상
    * @param {Function} onComplete - 애니메이션 완료 후 콜백
    */
   playHurtAnimation(target, onComplete) {
     const originalX = target.x;
+    const isBoss = target === this.bossSprite;
 
-    // 뒤로 밀림
+    // 피격 이미지로 변경
+    let originalTexture = null;
+    if (isBoss) {
+      originalTexture = `boss_${this.stageData.id}`;
+      const hurtTexture = `boss_${this.stageData.id}_hurt`;
+      if (this.textures.exists(hurtTexture)) {
+        this.bossSprite.setTexture(hurtTexture);
+      }
+    } else {
+      // 플레이어(사자)가 피격당하는 경우
+      originalTexture = this.currentLionKey;
+      const hurtTexture = `${this.currentLionKey}_hurt`;
+      if (this.textures.exists(hurtTexture)) {
+        this.playerSprite.setTexture(hurtTexture);
+      }
+    }
+
+    // 뒤로 밀림 + 피격 이미지 유지 후 원위치
     this.tweens.add({
       targets: target,
-      x: target === this.bossSprite ? originalX + 30 : originalX - 30,
-      duration: 100,
+      x: isBoss ? originalX + 30 : originalX - 30,
+      duration: 200,
       yoyo: true,
-      ease: 'Power2'
-    });
-
-    // 빨간색 틴트 깜빡임
-    this.tweens.add({
-      targets: target,
-      alpha: 0.5,
-      duration: 100,
-      yoyo: true,
-      repeat: 3,
-      onStart: () => {
-        if (target.setTint) {
-          target.setTint(0xff0000);
-        }
-      },
+      ease: 'Power2',
       onComplete: () => {
-        if (target.clearTint) {
-          target.clearTint();
-        }
-        target.setAlpha(1);
-        if (onComplete) onComplete();
+        // 약간의 지연 후 원래 이미지로 복귀
+        this.time.delayedCall(400, () => {
+          if (originalTexture && this.textures.exists(originalTexture)) {
+            target.setTexture(originalTexture);
+          }
+          if (onComplete) onComplete();
+        });
       }
     });
 

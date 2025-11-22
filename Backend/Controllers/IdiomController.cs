@@ -126,6 +126,85 @@ namespace IdiomLearningAPI.Controllers
         }
 
         /// <summary>
+        /// 한자 빈칸 채우기 퀴즈 생성 (방어 턴용)
+        /// GET /api/idiom/quiz/hanjaBlank?difficulty=MEDIUM
+        /// </summary>
+        [HttpGet("quiz/hanjaBlank")]
+        public async Task<IActionResult> GetHanjaBlankQuiz([FromQuery] string difficulty = "EASY")
+        {
+            try
+            {
+                if (!Enum.TryParse<Difficulty>(difficulty.ToUpper(), out var parsedDifficulty))
+                {
+                    return BadRequest(new { message = "유효하지 않은 난이도입니다." });
+                }
+
+                // 해당 난이도의 사자성어들 가져오기
+                var idioms = await _idiomsCollection
+                    .Find(i => i.BaseDifficulty == parsedDifficulty)
+                    .ToListAsync();
+
+                if (idioms.Count < 4)
+                {
+                    return NotFound(new { message = "퀴즈 생성에 필요한 사자성어가 부족합니다." });
+                }
+
+                // 랜덤 선택
+                var random = new Random();
+                var correctIdiom = idioms[random.Next(idioms.Count)];
+
+                // 한자 4글자 중 한 글자를 비움 (0~3)
+                var blankPosition = random.Next(4);
+                var hanjaChars = correctIdiom.Hanja.ToCharArray();
+                var correctChar = hanjaChars[blankPosition].ToString();
+
+                // 빈칸 처리
+                hanjaChars[blankPosition] = '_';
+                var questionText = new string(hanjaChars);
+
+                // 오답 보기 3개 생성 (다른 사자성어의 한자에서 가져옴)
+                var allHanjaChars = idioms
+                    .SelectMany(i => i.Hanja.ToCharArray())
+                    .Distinct()
+                    .Where(c => c.ToString() != correctChar)
+                    .ToList();
+
+                var wrongChoices = allHanjaChars
+                    .OrderBy(x => random.Next())
+                    .Take(3)
+                    .Select(c => c.ToString())
+                    .ToList();
+
+                // 보기 섞기
+                var choices = new List<string> { correctChar };
+                choices.AddRange(wrongChoices);
+                choices = choices.OrderBy(x => random.Next()).ToList();
+
+                var correctIndex = choices.IndexOf(correctChar);
+
+                var quiz = new
+                {
+                    idiomId = correctIdiom.IdiomId,
+                    question = $"{questionText} ({correctIdiom.Hangul})",
+                    fullHanja = correctIdiom.Hanja,
+                    hangul = correctIdiom.Hangul,
+                    blankPosition = blankPosition,
+                    choices = choices,
+                    answer = correctIndex,
+                    difficulty = correctIdiom.BaseDifficulty.ToString(),
+                    meaning = correctIdiom.Meaning
+                };
+
+                return Ok(quiz);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "한자 빈칸 퀴즈 생성 실패");
+                return StatusCode(500, new { message = "서버 오류가 발생했습니다." });
+            }
+        }
+
+        /// <summary>
         /// 카드 매칭 퀴즈 생성
         /// GET /api/idiom/quiz/matching?count=6
         /// </summary>

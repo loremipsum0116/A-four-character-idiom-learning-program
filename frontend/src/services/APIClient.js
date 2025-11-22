@@ -47,7 +47,12 @@ export class APIClient {
 
       return data;
     } catch (error) {
-      console.error(`[API Error] ${endpoint}:`, error);
+      // 네트워크 연결 실패는 조용히 처리 (백엔드 미연결 시 정상)
+      if (error.message === 'Failed to fetch') {
+        console.log(`[API] 백엔드 서버 미연결 - ${endpoint}`);
+      } else {
+        console.error(`[API Error] ${endpoint}:`, error);
+      }
       throw error;
     }
   }
@@ -200,6 +205,16 @@ export class APIClient {
    */
   async getBlankQuiz(difficulty) {
     return await this.request(`${API_ENDPOINTS.IDIOM.QUIZ}/blank?difficulty=${difficulty}`);
+  }
+
+  /**
+   * 한자 빈칸 채우기 퀴즈 조회 (방어 턴용)
+   *
+   * @param {string} difficulty - 난이도
+   * @returns {Promise<{idiomId, question, fullHanja, hangul, blankPosition, choices, answer}>}
+   */
+  async getHanjaBlankQuiz(difficulty) {
+    return await this.request(`${API_ENDPOINTS.IDIOM.QUIZ}/hanjaBlank?difficulty=${difficulty}`);
   }
 
   /**

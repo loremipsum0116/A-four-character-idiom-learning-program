@@ -126,8 +126,8 @@ export const API_ENDPOINTS = {
     PROGRESS: '/game/progress'
   },
   IDIOM: {
-    QUIZ: '/game/quiz',
-    RANDOM: '/game/quiz/random'
+    QUIZ: '/idiom/quiz',
+    RANDOM: '/idiom/random'
   },
   STATS: {
     USER: '/stats/user',
