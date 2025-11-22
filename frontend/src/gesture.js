@@ -112,10 +112,10 @@ function fingerExtended(lm, idx) {
 
 // 엄지 펴짐 계산 (벡터 기반)
 function thumbExtended(lm) {
-  const mcp = lm[2];
-  const tip = lm[4];
+  const mcp = lm[2]; // 엄지 MCP
+  const tip = lm[4]; // 엄지 TIP
 
-  // 손바닥 중심 = 손목 + MCP 평균
+  // 손바닥 중심
   const palmCenter = {
     x: (lm[0].x + lm[5].x + lm[9].x + lm[13].x + lm[17].x) / 5,
     y: (lm[0].y + lm[5].y + lm[9].y + lm[13].y + lm[17].y) / 5,
@@ -127,9 +127,14 @@ function thumbExtended(lm) {
 
   const ang = angle(v_thumb, v_palm);
 
-  // 각도가 어느 정도 이상이면 펴짐, 작으면 접힘
-  return ang > 50 ? 1 : 0;
+  // 엄지가 검지 MCP 쪽에 일정 거리 이하로 붙으면 접힘
+  const distToIndex = norm(vec(tip, lm[5])); // TIP과 검지 MCP 거리
+  const THRESHOLD_DIST = 0.12; // 조금만 붙어도 접힘 처리, 기존 0.05 → 0.12
+
+  if (distToIndex < THRESHOLD_DIST) return 0; // 접힘
+  return ang > 50 ? 1 : 0; // 각도가 크면 펴짐, 작으면 접힘
 }
+
 
 // 손가락 개수 계산
 function countFingers(lm) {
