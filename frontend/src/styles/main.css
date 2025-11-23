@@ -144,7 +144,6 @@ input::placeholder {
 .pulse {
   animation: pulse 2s ease-in-out infinite;
 }
-<<<<<<< HEAD
 
 video, canvas {
   position: absolute;
@@ -159,5 +158,3 @@ video, canvas {
   color: white;
   text-shadow: 2px 2px 5px black;
 }
-=======
->>>>>>> origin/main
