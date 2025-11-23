@@ -1,6 +1,7 @@
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using IdiomLearningAPI.Models;
+using IdiomLearningAPI.Data;
 
 namespace IdiomLearningAPI.Services
 {
@@ -9,16 +10,14 @@ namespace IdiomLearningAPI.Services
     /// </summary>
     public class DataSeeder
     {
-        private readonly IMongoCollection<Idiom> _idiomsCollection;
-        private readonly IMongoCollection<GameStage> _stagesCollection;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<DataSeeder> _logger;
 
         public DataSeeder(
-            IMongoDatabase database,
+            ApplicationDbContext context,
             ILogger<DataSeeder> logger)
         {
-            _idiomsCollection = database.GetCollection<Idiom>("Idioms");
-            _stagesCollection = database.GetCollection<GameStage>("GameStages");
+            _context = context;
             _logger = logger;
         }
 
@@ -39,7 +38,7 @@ namespace IdiomLearningAPI.Services
             try
             {
                 // 기존 데이터 확인
-                var count = await _idiomsCollection.CountDocumentsAsync(_ => true);
+                var count = await _context.Idioms.CountAsync();
                 if (count > 0)
                 {
                     _logger.LogInformation($"사자성어 데이터가 이미 {count}개 존재합니다. 스킵합니다.");
@@ -77,8 +76,9 @@ namespace IdiomLearningAPI.Services
                     CreatedAt = DateTime.UtcNow
                 }).ToList();
 
-                // MongoDB에 삽입
-                await _idiomsCollection.InsertManyAsync(idiomModels);
+                // EF Core로 삽입
+                await _context.Idioms.AddRangeAsync(idiomModels);
+                await _context.SaveChangesAsync();
 
                 _logger.LogInformation($"✅ {idiomModels.Count}개의 사자성어 데이터를 성공적으로 삽입했습니다.");
                 _logger.LogInformation($"  - 초급: {idiomModels.Count(i => i.BaseDifficulty == Difficulty.EASY)}개");
@@ -99,7 +99,7 @@ namespace IdiomLearningAPI.Services
         {
             try
             {
-                var count = await _stagesCollection.CountDocumentsAsync(_ => true);
+                var count = await _context.GameStages.CountAsync();
                 if (count > 0)
                 {
                     _logger.LogInformation($"스테이지 데이터가 이미 {count}개 존재합니다. 스킵합니다.");
@@ -123,7 +123,8 @@ namespace IdiomLearningAPI.Services
                     new GameStage { StageId = 12, BossName = "호랑이", Emoji = "🐯", ZodiacAnimal = "호랑이", BossHp = 500, BossAttackPower = 35, BossImageUrl = "/pictures/tiger.png", Description = "백수의 왕 호랑이, 최종 보스", RequiredDifficulty = Difficulty.HARD }
                 };
 
-                await _stagesCollection.InsertManyAsync(stages);
+                await _context.GameStages.AddRangeAsync(stages);
+                await _context.SaveChangesAsync();
 
                 _logger.LogInformation($"✅ {stages.Count}개의 스테이지 데이터를 성공적으로 삽입했습니다.");
             }
@@ -139,8 +140,9 @@ namespace IdiomLearningAPI.Services
         /// </summary>
         public async Task ClearAllDataAsync()
         {
-            await _idiomsCollection.DeleteManyAsync(_ => true);
-            await _stagesCollection.DeleteManyAsync(_ => true);
+            _context.Idioms.RemoveRange(_context.Idioms);
+            _context.GameStages.RemoveRange(_context.GameStages);
+            await _context.SaveChangesAsync();
             _logger.LogWarning("⚠️ 모든 데이터가 삭제되었습니다.");
         }
     }

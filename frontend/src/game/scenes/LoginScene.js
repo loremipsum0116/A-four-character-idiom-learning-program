@@ -41,10 +41,13 @@ export default class LoginScene extends Phaser.Scene {
     // 로그인 패널
     this.createLoginPanel();
 
-    // 자동 로그인 체크 (토큰이 있으면)
+    // 자동 로그인 비활성화 - 사용자가 명시적으로 로그인하도록 함
+    // 이전 세션의 토큰이 있어도 로그인 화면을 표시
+    /*
     if (apiClient.isAuthenticated()) {
       this.attemptAutoLogin();
     }
+    */
   }
 
   createLoginPanel() {
@@ -190,11 +193,10 @@ export default class LoginScene extends Phaser.Scene {
       // 일반 로그인 - 게스트 모드 false
       setGuestMode(false);
 
-      // HTML 폼 제거
-      this.removeHTMLForm();
-
       // 메인 메뉴로 이동
       this.time.delayedCall(1000, () => {
+        // HTML 폼 제거 (scene 전환 직전)
+        this.removeHTMLForm();
         this.scene.start('IntroScene', { user: response.user });
       });
     } catch (error) {
@@ -229,11 +231,10 @@ export default class LoginScene extends Phaser.Scene {
       // 일반 회원가입 - 게스트 모드 false
       setGuestMode(false);
 
-      // HTML 폼 제거
-      this.removeHTMLForm();
-
       // 메인 메뉴로 이동
       this.time.delayedCall(1000, () => {
+        // HTML 폼 제거 (scene 전환 직전)
+        this.removeHTMLForm();
         this.scene.start('IntroScene', { user: response.user });
       });
     } catch (error) {
@@ -254,6 +255,8 @@ export default class LoginScene extends Phaser.Scene {
       setGuestMode(false);
 
       this.time.delayedCall(1000, () => {
+        // HTML 폼 제거 (scene 전환 직전)
+        this.removeHTMLForm();
         this.scene.start('IntroScene', { user });
       });
     } catch (error) {
@@ -270,9 +273,9 @@ export default class LoginScene extends Phaser.Scene {
     // 게스트 모드 플래그 설정
     setGuestMode(true);
 
-    this.removeHTMLForm();
-
     this.time.delayedCall(1000, () => {
+      // HTML 폼 제거 (scene 전환 직전)
+      this.removeHTMLForm();
       this.scene.start('IntroScene', {
         user: { nickname: '게스트', email: 'guest@example.com' }
       });
@@ -287,13 +290,25 @@ export default class LoginScene extends Phaser.Scene {
   }
 
   removeHTMLForm() {
-    const form = document.getElementById('login-form');
-    if (form && form.parentElement) {
-      form.parentElement.remove();
-    }
+    // 모든 login-form 관련 요소 제거
+    const forms = document.querySelectorAll('#login-form');
+    forms.forEach(form => {
+      if (form && form.parentElement) {
+        form.parentElement.remove();
+      }
+    });
+
+    // 혹시 남아있을 수 있는 모든 login-form 관련 요소 제거
+    const allForms = document.querySelectorAll('[id="login-form"]');
+    allForms.forEach(element => {
+      element.remove();
+    });
+
+    console.log('🗑️ 로그인 폼 제거 완료');
   }
 
   shutdown() {
+    console.log('🔚 LoginScene shutdown');
     this.removeHTMLForm();
   }
 }

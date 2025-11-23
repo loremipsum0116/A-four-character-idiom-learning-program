@@ -1,5 +1,5 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IdiomLearningAPI.Models
 {
@@ -7,34 +7,37 @@ namespace IdiomLearningAPI.Models
     /// 사자성어 모델
     /// FR 3.1: 사자성어 DB
     /// </summary>
+    [Table("Idioms")]
     public class Idiom
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = string.Empty;
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        [BsonElement("idiom_id")]
+        [Required]
         public int IdiomId { get; set; }
 
-        [BsonElement("hanja")]
+        [Required]
+        [MaxLength(100)]
         public string Hanja { get; set; } = string.Empty;
 
-        [BsonElement("hangul")]
+        [Required]
+        [MaxLength(100)]
         public string Hangul { get; set; } = string.Empty;
 
-        [BsonElement("meaning")]
+        [Required]
+        [MaxLength(500)]
         public string Meaning { get; set; } = string.Empty;
 
-        [BsonElement("example_sentence")]
+        [MaxLength(1000)]
         public string ExampleSentence { get; set; } = string.Empty;
 
-        [BsonElement("base_difficulty")]
+        [Required]
         public Difficulty BaseDifficulty { get; set; }
 
-        [BsonElement("category")]
+        [MaxLength(100)]
         public string Category { get; set; } = string.Empty;
 
-        [BsonElement("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 

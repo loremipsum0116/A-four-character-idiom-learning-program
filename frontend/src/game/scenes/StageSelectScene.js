@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { GAME_CONSTANTS } from '../../utils/constants.js';
 import { getLionLevel } from '../../utils/damageCalculator.js';
-import { loadGameData } from '../../utils/storageManager.js';
+import { loadGameData, isGuestMode } from '../../utils/storageManager.js';
+import { apiClient } from '../../services/APIClient.js';
 
 /**
  * StageSelectScene - 스테이지 선택
@@ -11,11 +12,22 @@ import { loadGameData } from '../../utils/storageManager.js';
 export default class StageSelectScene extends Phaser.Scene {
   constructor() {
     super({ key: 'StageSelectScene' });
+    this.userProgress = null; // 서버에서 가져온 진행 상황
   }
 
-  create() {
+  async create() {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
+
+    // 로그인한 사용자는 서버에서 진행 상황 가져오기
+    if (!isGuestMode() && apiClient.isAuthenticated()) {
+      try {
+        this.userProgress = await apiClient.getProgress();
+        console.log('📊 사용자 진행 상황:', this.userProgress);
+      } catch (error) {
+        console.error('❌ 진행 상황 로드 실패:', error);
+      }
+    }
 
     // 배경
     this.add.rectangle(width / 2, height / 2, width, height, 0x2d3561);
@@ -184,9 +196,16 @@ export default class StageSelectScene extends Phaser.Scene {
     });
   }
 
-  // 스토리지에서 클리어한 최고 스테이지 가져오기
-  // 게스트: sessionStorage, 일반: localStorage
+  // 클리어한 최고 스테이지 가져오기
+  // 로그인: 서버 데이터, 게스트: localStorage
   getMaxClearedStage() {
+    // 로그인한 사용자는 서버 데이터 사용
+    if (!isGuestMode() && this.userProgress && this.userProgress.clearedStages) {
+      const clearedStages = this.userProgress.clearedStages;
+      return clearedStages.length > 0 ? Math.max(...clearedStages) : 0;
+    }
+
+    // 게스트 모드는 localStorage 사용
     const cleared = loadGameData('maxClearedStage', '0');
     return parseInt(cleared, 10);
   }

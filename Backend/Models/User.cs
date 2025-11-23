@@ -1,5 +1,6 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace IdiomLearningAPI.Models
 {
@@ -7,73 +8,71 @@ namespace IdiomLearningAPI.Models
     /// 사용자 모델
     /// FR 1.0: 사용자 계정 및 인증
     /// </summary>
+    [Table("Users")]
     public class User
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = string.Empty;
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        [BsonElement("email")]
+        [Required]
+        [MaxLength(200)]
         public string Email { get; set; } = string.Empty;
 
-        [BsonElement("password")]
+        [Required]
+        [MaxLength(500)]
         public string Password { get; set; } = string.Empty;
 
-        [BsonElement("nickname")]
+        [Required]
+        [MaxLength(100)]
         public string Nickname { get; set; } = string.Empty;
 
-        [BsonElement("profileImage")]
-        public string? ProfileImage { get; set; }
+        [MaxLength(500)]
+        public string ClearedStagesJson { get; set; } = "[]";
 
-        [BsonElement("clearedStages")]
-        public List<int> ClearedStages { get; set; } = new List<int>();
+        [NotMapped]
+        public List<int> ClearedStages
+        {
+            get => System.Text.Json.JsonSerializer.Deserialize<List<int>>(ClearedStagesJson) ?? new List<int>();
+            set => ClearedStagesJson = System.Text.Json.JsonSerializer.Serialize(value);
+        }
 
-        [BsonElement("lionStats")]
-        public LionStats LionStats { get; set; } = new LionStats();
+        [MaxLength(1000)]
+        public string LionStatsJson { get; set; } = "{}";
 
-        [BsonElement("unlockedContent")]
-        public UnlockedContent UnlockedContent { get; set; } = new UnlockedContent();
+        [NotMapped]
+        public LionStats LionStats
+        {
+            get => System.Text.Json.JsonSerializer.Deserialize<LionStats>(LionStatsJson) ?? new LionStats();
+            set => LionStatsJson = System.Text.Json.JsonSerializer.Serialize(value);
+        }
 
-        [BsonElement("settings")]
-        public UserSettings Settings { get; set; } = new UserSettings();
+        [MaxLength(1000)]
+        public string UnlockedContentJson { get; set; } = "{}";
 
-        [BsonElement("createdAt")]
+        [NotMapped]
+        public UnlockedContent UnlockedContent
+        {
+            get => System.Text.Json.JsonSerializer.Deserialize<UnlockedContent>(UnlockedContentJson) ?? new UnlockedContent();
+            set => UnlockedContentJson = System.Text.Json.JsonSerializer.Serialize(value);
+        }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        [BsonElement("lastLogin")]
         public DateTime LastLogin { get; set; } = DateTime.UtcNow;
     }
 
     public class LionStats
     {
-        [BsonElement("hp")]
         public int Hp { get; set; } = 100;
-
-        [BsonElement("maxHp")]
         public int MaxHp { get; set; } = 100;
-
-        [BsonElement("level")]
         public int Level { get; set; } = 1;
     }
 
     public class UnlockedContent
     {
-        [BsonElement("hiddenBoss")]
         public bool HiddenBoss { get; set; } = false;
-
-        [BsonElement("infiniteMode")]
         public bool InfiniteMode { get; set; } = false;
-
-        [BsonElement("pvpMode")]
         public bool PvpMode { get; set; } = false;
-    }
-
-    public class UserSettings
-    {
-        [BsonElement("sound")]
-        public bool Sound { get; set; } = true;
-
-        [BsonElement("notification")]
-        public bool Notification { get; set; } = true;
     }
 }

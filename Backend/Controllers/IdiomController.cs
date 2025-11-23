@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
+using IdiomLearningAPI.Data;
 using IdiomLearningAPI.Models;
 
 namespace IdiomLearningAPI.Controllers
@@ -9,12 +10,12 @@ namespace IdiomLearningAPI.Controllers
     [Route("api/[controller]")]
     public class IdiomController : ControllerBase
     {
-        private readonly IMongoCollection<Idiom> _idiomsCollection;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<IdiomController> _logger;
 
-        public IdiomController(IMongoDatabase database, ILogger<IdiomController> logger)
+        public IdiomController(ApplicationDbContext context, ILogger<IdiomController> logger)
         {
-            _idiomsCollection = database.GetCollection<Idiom>("Idioms");
+            _context = context;
             _logger = logger;
         }
 
@@ -34,8 +35,8 @@ namespace IdiomLearningAPI.Controllers
                 }
 
                 // 해당 난이도의 사자성어 가져오기
-                var idioms = await _idiomsCollection
-                    .Find(i => i.BaseDifficulty == parsedDifficulty)
+                var idioms = await _context.Idioms
+                    .Where(i => i.BaseDifficulty == parsedDifficulty)
                     .ToListAsync();
 
                 if (idioms.Count == 0)
@@ -71,8 +72,8 @@ namespace IdiomLearningAPI.Controllers
                 }
 
                 // 해당 난이도의 사자성어들 가져오기
-                var idioms = await _idiomsCollection
-                    .Find(i => i.BaseDifficulty == parsedDifficulty)
+                var idioms = await _context.Idioms
+                    .Where(i => i.BaseDifficulty == parsedDifficulty)
                     .ToListAsync();
 
                 if (idioms.Count < 4)
@@ -140,8 +141,8 @@ namespace IdiomLearningAPI.Controllers
                 }
 
                 // 해당 난이도의 사자성어들 가져오기
-                var idioms = await _idiomsCollection
-                    .Find(i => i.BaseDifficulty == parsedDifficulty)
+                var idioms = await _context.Idioms
+                    .Where(i => i.BaseDifficulty == parsedDifficulty)
                     .ToListAsync();
 
                 if (idioms.Count < 4)
@@ -185,7 +186,7 @@ namespace IdiomLearningAPI.Controllers
                 var quiz = new
                 {
                     idiomId = correctIdiom.IdiomId,
-                    question = $"{questionText} ({correctIdiom.Hangul})",
+                    question = questionText,
                     fullHanja = correctIdiom.Hanja,
                     hangul = correctIdiom.Hangul,
                     blankPosition = blankPosition,
@@ -214,9 +215,7 @@ namespace IdiomLearningAPI.Controllers
             try
             {
                 // 전체 사자성어에서 랜덤 선택
-                var allIdioms = await _idiomsCollection
-                    .Find(_ => true)
-                    .ToListAsync();
+                var allIdioms = await _context.Idioms.ToListAsync();
 
                 if (allIdioms.Count < count)
                 {
@@ -259,19 +258,18 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var filter = Builders<Idiom>.Filter.Empty;
+                var query = _context.Idioms.AsQueryable();
 
                 // 난이도 필터
                 if (!string.IsNullOrEmpty(difficulty) && Enum.TryParse<Difficulty>(difficulty.ToUpper(), out var parsedDifficulty))
                 {
-                    filter = Builders<Idiom>.Filter.Eq(i => i.BaseDifficulty, parsedDifficulty);
+                    query = query.Where(i => i.BaseDifficulty == parsedDifficulty);
                 }
 
-                var total = await _idiomsCollection.CountDocumentsAsync(filter);
-                var idioms = await _idiomsCollection
-                    .Find(filter)
+                var total = await query.CountAsync();
+                var idioms = await query
                     .Skip((page - 1) * limit)
-                    .Limit(limit)
+                    .Take(limit)
                     .ToListAsync();
 
                 return Ok(new
@@ -298,9 +296,8 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var idiom = await _idiomsCollection
-                    .Find(i => i.IdiomId == idiomId)
-                    .FirstOrDefaultAsync();
+                var idiom = await _context.Idioms
+                    .FirstOrDefaultAsync(i => i.IdiomId == idiomId);
 
                 if (idiom == null)
                 {
@@ -325,10 +322,10 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var total = await _idiomsCollection.CountDocumentsAsync(_ => true);
-                var easy = await _idiomsCollection.CountDocumentsAsync(i => i.BaseDifficulty == Difficulty.EASY);
-                var medium = await _idiomsCollection.CountDocumentsAsync(i => i.BaseDifficulty == Difficulty.MEDIUM);
-                var hard = await _idiomsCollection.CountDocumentsAsync(i => i.BaseDifficulty == Difficulty.HARD);
+                var total = await _context.Idioms.CountAsync();
+                var easy = await _context.Idioms.CountAsync(i => i.BaseDifficulty == Difficulty.EASY);
+                var medium = await _context.Idioms.CountAsync(i => i.BaseDifficulty == Difficulty.MEDIUM);
+                var hard = await _context.Idioms.CountAsync(i => i.BaseDifficulty == Difficulty.HARD);
 
                 return Ok(new
                 {

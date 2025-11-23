@@ -249,6 +249,13 @@ export class APIClient {
     return await this.request(`${API_ENDPOINTS.STATS.LEADERBOARD}?limit=${limit}`);
   }
 
+  /**
+   * FR 6.0 - 개인 학습 기록 조회
+   */
+  async getStatistics() {
+    return await this.request('/game/statistics');
+  }
+
   // ======================
   // 유틸리티
   // ======================

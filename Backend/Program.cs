@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using IdiomLearningAPI.Data;
@@ -47,9 +48,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// MongoDB Context
-builder.Services.AddSingleton<MongoDbContext>();
-builder.Services.AddSingleton(sp => sp.GetRequiredService<MongoDbContext>().Database);
+// MySQL Database Context
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 // Services
 builder.Services.AddScoped<AuthService>();
@@ -137,6 +139,27 @@ app.MapPost("/api/seed/stages", async (DataSeeder seeder) =>
     {
         await seeder.SeedGameStagesAsync();
         return Results.Ok(new { message = "스테이지 데이터 초기화가 완료되었습니다." });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(detail: ex.Message, statusCode: 500);
+    }
+});
+
+// Swap Hanja and Hangul columns (temporary fix)
+app.MapPost("/api/fix/swap-hanja-hangul", async (ApplicationDbContext context) =>
+{
+    try
+    {
+        var idioms = await context.Idioms.ToListAsync();
+        foreach (var idiom in idioms)
+        {
+            var temp = idiom.Hanja;
+            idiom.Hanja = idiom.Hangul;
+            idiom.Hangul = temp;
+        }
+        await context.SaveChangesAsync();
+        return Results.Ok(new { message = "Hanja와 Hangul 컬럼이 성공적으로 교환되었습니다.", count = idioms.Count });
     }
     catch (Exception ex)
     {

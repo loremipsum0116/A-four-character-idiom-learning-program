@@ -3,7 +3,7 @@ import { apiClient } from '../../services/APIClient.js';
 import { calculateAttackDamage, calculateDefenseDamage, getDamageDisplayInfo, getLionLevel, checkLionLevelUp } from '../../utils/damageCalculator.js';
 import { GAME_CONSTANTS } from '../../utils/constants.js';
 import { geminiService } from '../../services/GeminiService.js';
-import { saveGameData, loadGameData } from '../../utils/storageManager.js';
+import { saveGameData, loadGameData, isGuestMode } from '../../utils/storageManager.js';
 
 /**
  * BattleScene - 턴제 전투 씬 (핵심)
@@ -858,7 +858,7 @@ export default class BattleScene extends Phaser.Scene {
     const mockHanjaQuizzes = [
       {
         idiomId: 1,
-        question: '一_二鳥 (일석이조)',
+        question: '一_二鳥',
         fullHanja: '一石二鳥',
         hangul: '일석이조',
         blankPosition: 1,
@@ -868,7 +868,7 @@ export default class BattleScene extends Phaser.Scene {
       },
       {
         idiomId: 2,
-        question: '以心_心 (이심전심)',
+        question: '以心_心',
         fullHanja: '以心傳心',
         hangul: '이심전심',
         blankPosition: 2,
@@ -878,7 +878,7 @@ export default class BattleScene extends Phaser.Scene {
       },
       {
         idiomId: 3,
-        question: '四面_歌 (사면초가)',
+        question: '四面_歌',
         fullHanja: '四面楚歌',
         hangul: '사면초가',
         blankPosition: 2,
@@ -1305,7 +1305,7 @@ export default class BattleScene extends Phaser.Scene {
     this.clearQuizUI();
 
     // 스테이지 클리어 저장
-    this.saveStageProgress(this.stageData.id);
+    await this.saveStageProgress(this.stageData.id);
 
     // Idle 애니메이션 중지
     if (this.idleTween) {
@@ -1755,14 +1755,36 @@ export default class BattleScene extends Phaser.Scene {
 
   /**
    * 스테이지 클리어 진행 상황 저장
-   * 게스트: sessionStorage, 일반: localStorage
+   * 로그인 사용자: 서버 API 호출
+   * 게스트: localStorage 사용
    */
-  saveStageProgress(clearedStageId) {
-    const currentMax = loadGameData('maxClearedStage', '0');
-    const currentMaxNum = parseInt(currentMax, 10);
+  async saveStageProgress(clearedStageId) {
+    console.log(`💾 스테이지 클리어 저장 시작 - 스테이지 ${clearedStageId}`);
+    console.log(`🔍 게스트 모드: ${isGuestMode()}, 인증 여부: ${apiClient.isAuthenticated()}`);
 
-    if (clearedStageId > currentMaxNum) {
-      saveGameData('maxClearedStage', clearedStageId.toString());
+    // 로그인한 사용자는 서버에 저장
+    if (!isGuestMode() && apiClient.isAuthenticated()) {
+      console.log(`🌐 서버에 스테이지 클리어 저장 중...`);
+      try {
+        const response = await apiClient.clearStage(clearedStageId);
+        console.log(`✅ 스테이지 ${clearedStageId} 클리어 - 서버에 저장 완료`, response);
+      } catch (error) {
+        console.error('❌ 스테이지 클리어 저장 실패:', error);
+        // 실패해도 로컬에 저장 (백업)
+        const currentMax = loadGameData('maxClearedStage', '0');
+        const currentMaxNum = parseInt(currentMax, 10);
+        if (clearedStageId > currentMaxNum) {
+          saveGameData('maxClearedStage', clearedStageId.toString());
+        }
+      }
+    } else {
+      // 게스트 모드는 localStorage에 저장
+      const currentMax = loadGameData('maxClearedStage', '0');
+      const currentMaxNum = parseInt(currentMax, 10);
+      if (clearedStageId > currentMaxNum) {
+        saveGameData('maxClearedStage', clearedStageId.toString());
+        console.log(`✅ 스테이지 ${clearedStageId} 클리어 - 게스트 모드 localStorage에 저장`);
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IdiomLearningAPI.Models
 {
@@ -7,37 +7,38 @@ namespace IdiomLearningAPI.Models
     /// 게임 스테이지 모델 (12지신)
     /// FR 4.1: 스테이지 맵
     /// </summary>
+    [Table("GameStages")]
     public class GameStage
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = string.Empty;
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        [BsonElement("stage_id")]
+        [Required]
         public int StageId { get; set; }
 
-        [BsonElement("boss_name")]
+        [Required]
+        [MaxLength(100)]
         public string BossName { get; set; } = string.Empty;
 
-        [BsonElement("boss_hp")]
         public int BossHp { get; set; }
 
-        [BsonElement("boss_attack_power")]
         public int BossAttackPower { get; set; }
 
-        [BsonElement("boss_image_url")]
+        [MaxLength(500)]
         public string? BossImageUrl { get; set; }
 
-        [BsonElement("zodiac_animal")]
+        [Required]
+        [MaxLength(100)]
         public string ZodiacAnimal { get; set; } = string.Empty;
 
-        [BsonElement("description")]
+        [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
 
-        [BsonElement("emoji")]
+        [MaxLength(10)]
         public string Emoji { get; set; } = string.Empty;
 
-        [BsonElement("required_difficulty")]
+        [Required]
         public Difficulty RequiredDifficulty { get; set; }
     }
 }

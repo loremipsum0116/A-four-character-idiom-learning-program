@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using IdiomLearningAPI.Data;
 using IdiomLearningAPI.Models;
@@ -17,9 +17,9 @@ namespace IdiomLearningAPI.Controllers
     [Authorize]
     public class GameController : ControllerBase
     {
-        private readonly MongoDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public GameController(MongoDbContext context)
+        public GameController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -33,8 +33,7 @@ namespace IdiomLearningAPI.Controllers
             try
             {
                 var stages = await _context.GameStages
-                    .Find(_ => true)
-                    .SortBy(s => s.StageId)
+                    .OrderBy(s => s.StageId)
                     .ToListAsync();
 
                 return Ok(new { stages });
@@ -54,8 +53,7 @@ namespace IdiomLearningAPI.Controllers
             try
             {
                 var stage = await _context.GameStages
-                    .Find(s => s.StageId == stageId)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(s => s.StageId == stageId);
 
                 if (stage == null)
                 {
@@ -78,8 +76,8 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 {
                     return Unauthorized();
                 }
@@ -105,7 +103,8 @@ namespace IdiomLearningAPI.Controllers
                     Timestamp = DateTime.UtcNow
                 };
 
-                await _context.LearningLogs.InsertOneAsync(learningLog);
+                _context.LearningLogs.Add(learningLog);
+                await _context.SaveChangesAsync();
 
                 return Ok(new AttackResponse
                 {
@@ -130,8 +129,8 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 {
                     return Unauthorized();
                 }
@@ -155,7 +154,8 @@ namespace IdiomLearningAPI.Controllers
                     Timestamp = DateTime.UtcNow
                 };
 
-                await _context.LearningLogs.InsertOneAsync(learningLog);
+                _context.LearningLogs.Add(learningLog);
+                await _context.SaveChangesAsync();
 
                 return Ok(new DefenseResponse
                 {
@@ -178,15 +178,14 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 {
                     return Unauthorized();
                 }
 
                 var user = await _context.Users
-                    .Find(u => u.Id == userId)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
                 {
@@ -206,12 +205,8 @@ namespace IdiomLearningAPI.Controllers
                         user.UnlockedContent.PvpMode = true;
                     }
 
-                    // 업데이트
-                    var update = Builders<User>.Update
-                        .Set(u => u.ClearedStages, user.ClearedStages)
-                        .Set(u => u.UnlockedContent, user.UnlockedContent);
-
-                    await _context.Users.UpdateOneAsync(u => u.Id == userId, update);
+                    // EF Core가 변경사항을 자동으로 추적하므로 SaveChangesAsync만 호출
+                    await _context.SaveChangesAsync();
                 }
 
                 return Ok(new
@@ -235,15 +230,14 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 {
                     return Unauthorized();
                 }
 
                 var user = await _context.Users
-                    .Find(u => u.Id == userId)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
                 {
@@ -270,6 +264,97 @@ namespace IdiomLearningAPI.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "Failed to get progress", message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// FR 6.0: 개인 학습 기록 조회
+        /// </summary>
+        [HttpGet("statistics")]
+        public async Task<ActionResult> GetStatistics()
+        {
+            try
+            {
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                {
+                    return Unauthorized();
+                }
+
+                // 전체 학습 로그
+                var logs = await _context.LearningLogs
+                    .Where(l => l.UserId == userId)
+                    .OrderByDescending(l => l.Timestamp)
+                    .Take(100) // 최근 100개
+                    .ToListAsync();
+
+                // 통계 계산
+                var totalQuizzes = logs.Count;
+                var correctCount = logs.Count(l => l.IsCorrect);
+                var attackCount = logs.Count(l => l.ActionType == ActionType.ATTACK);
+                var defenseCount = logs.Count(l => l.ActionType == ActionType.DEFEND);
+
+                // 난이도별 정답률
+                var easyCorrect = logs.Where(l => l.ChosenDifficulty == Difficulty.EASY && l.IsCorrect).Count();
+                var easyTotal = logs.Where(l => l.ChosenDifficulty == Difficulty.EASY).Count();
+                var mediumCorrect = logs.Where(l => l.ChosenDifficulty == Difficulty.MEDIUM && l.IsCorrect).Count();
+                var mediumTotal = logs.Where(l => l.ChosenDifficulty == Difficulty.MEDIUM).Count();
+                var hardCorrect = logs.Where(l => l.ChosenDifficulty == Difficulty.HARD && l.IsCorrect).Count();
+                var hardTotal = logs.Where(l => l.ChosenDifficulty == Difficulty.HARD).Count();
+
+                // 평균 응답 시간
+                var avgResponseTime = logs.Any() ? logs.Average(l => l.ResponseTimeMs) : 0;
+
+                // 총 데미지
+                var totalDamage = logs.Where(l => l.ActionType == ActionType.ATTACK).Sum(l => l.CalculatedDamage);
+
+                // 일별 학습 횟수 (최근 7일)
+                var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
+                var dailyStats = logs
+                    .Where(l => l.Timestamp >= sevenDaysAgo)
+                    .GroupBy(l => l.Timestamp.Date)
+                    .Select(g => new
+                    {
+                        date = g.Key.ToString("yyyy-MM-dd"),
+                        count = g.Count(),
+                        correctCount = g.Count(l => l.IsCorrect)
+                    })
+                    .OrderBy(x => x.date)
+                    .ToList();
+
+                return Ok(new
+                {
+                    summary = new
+                    {
+                        totalQuizzes,
+                        correctCount,
+                        accuracy = totalQuizzes > 0 ? (double)correctCount / totalQuizzes * 100 : 0,
+                        attackCount,
+                        defenseCount,
+                        avgResponseTime,
+                        totalDamage
+                    },
+                    byDifficulty = new
+                    {
+                        easy = new { total = easyTotal, correct = easyCorrect, accuracy = easyTotal > 0 ? (double)easyCorrect / easyTotal * 100 : 0 },
+                        medium = new { total = mediumTotal, correct = mediumCorrect, accuracy = mediumTotal > 0 ? (double)mediumCorrect / mediumTotal * 100 : 0 },
+                        hard = new { total = hardTotal, correct = hardCorrect, accuracy = hardTotal > 0 ? (double)hardCorrect / hardTotal * 100 : 0 }
+                    },
+                    dailyStats,
+                    recentLogs = logs.Take(10).Select(l => new
+                    {
+                        timestamp = l.Timestamp,
+                        actionType = l.ActionType.ToString(),
+                        difficulty = l.ChosenDifficulty?.ToString(),
+                        isCorrect = l.IsCorrect,
+                        responseTimeMs = l.ResponseTimeMs,
+                        damage = l.CalculatedDamage
+                    })
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to get statistics", message = ex.Message });
             }
         }
     }

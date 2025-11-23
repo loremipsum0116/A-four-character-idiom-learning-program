@@ -35,3 +35,7 @@ coverage/
 
 # Production
 *.tgz
+
+# .NET build outputs
+Backend/bin/
+Backend/obj/

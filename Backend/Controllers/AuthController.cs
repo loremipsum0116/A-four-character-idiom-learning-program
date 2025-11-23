@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 using IdiomLearningAPI.Data;
 using IdiomLearningAPI.Models;
 using IdiomLearningAPI.DTOs;
@@ -16,10 +16,10 @@ namespace IdiomLearningAPI.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly MongoDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly AuthService _authService;
 
-        public AuthController(MongoDbContext context, AuthService authService)
+        public AuthController(ApplicationDbContext context, AuthService authService)
         {
             _context = context;
             _authService = authService;
@@ -35,8 +35,7 @@ namespace IdiomLearningAPI.Controllers
             {
                 // 이메일 중복 확인
                 var existingUser = await _context.Users
-                    .Find(u => u.Email == request.Email)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(u => u.Email == request.Email);
 
                 if (existingUser != null)
                 {
@@ -53,7 +52,8 @@ namespace IdiomLearningAPI.Controllers
                     LastLogin = DateTime.UtcNow
                 };
 
-                await _context.Users.InsertOneAsync(user);
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
 
                 // JWT 토큰 생성
                 var token = _authService.GenerateToken(user);
@@ -81,8 +81,7 @@ namespace IdiomLearningAPI.Controllers
             {
                 // 사용자 조회
                 var user = await _context.Users
-                    .Find(u => u.Email == request.Email)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(u => u.Email == request.Email);
 
                 if (user == null)
                 {
@@ -96,8 +95,8 @@ namespace IdiomLearningAPI.Controllers
                 }
 
                 // 마지막 로그인 시간 업데이트
-                var update = Builders<User>.Update.Set(u => u.LastLogin, DateTime.UtcNow);
-                await _context.Users.UpdateOneAsync(u => u.Id == user.Id, update);
+                user.LastLogin = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
 
                 // JWT 토큰 생성
                 var token = _authService.GenerateToken(user);
@@ -124,15 +123,14 @@ namespace IdiomLearningAPI.Controllers
         {
             try
             {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 {
                     return Unauthorized(new { error = "User not authenticated" });
                 }
 
                 var user = await _context.Users
-                    .Find(u => u.Id == userId)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(u => u.Id == userId);
 
                 if (user == null)
                 {
@@ -151,7 +149,7 @@ namespace IdiomLearningAPI.Controllers
         {
             return new UserDTO
             {
-                Id = user.Id,
+                Id = user.Id.ToString(),
                 Email = user.Email,
                 Nickname = user.Nickname,
                 ClearedStages = user.ClearedStages,

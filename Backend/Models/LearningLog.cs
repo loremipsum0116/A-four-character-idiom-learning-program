@@ -1,5 +1,5 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IdiomLearningAPI.Models
 {
@@ -8,38 +8,32 @@ namespace IdiomLearningAPI.Models
     /// FR 4.5: 학습 성과 데이터 수신
     /// FR 6.1: 학습 데이터 수집
     /// </summary>
+    [Table("LearningLogs")]
     public class LearningLog
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = string.Empty;
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        [BsonElement("user_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string UserId { get; set; } = string.Empty;
+        [Required]
+        public int UserId { get; set; }
 
-        [BsonElement("stage_id")]
         public int? StageId { get; set; }
 
-        [BsonElement("idiom_id")]
+        [Required]
         public int IdiomId { get; set; }
 
-        [BsonElement("action_type")]
+        [Required]
         public ActionType ActionType { get; set; }
 
-        [BsonElement("chosen_difficulty")]
         public Difficulty? ChosenDifficulty { get; set; }
 
-        [BsonElement("is_correct")]
         public bool IsCorrect { get; set; }
 
-        [BsonElement("response_time_ms")]
         public int ResponseTimeMs { get; set; }
 
-        [BsonElement("calculated_damage")]
         public int CalculatedDamage { get; set; }
 
-        [BsonElement("timestamp")]
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 
