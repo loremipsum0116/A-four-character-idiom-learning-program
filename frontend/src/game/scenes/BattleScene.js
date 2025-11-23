@@ -35,6 +35,15 @@ export default class BattleScene extends Phaser.Scene {
     this.playerMaxHP = baseMaxHP + this.lionLevel.hpBonus;
     this.playerHP = this.playerMaxHP;
 
+    // 사자 레벨별 크기 설정 (호랑이와 대등하게)
+    const lionScales = {
+      '견습 사자': 0.30,
+      '전사 사자': 0.38,
+      '대장군 사자': 0.50,
+      '사자왕': 0.58
+    };
+    this.lionScale = lionScales[this.lionLevel.name] || 0.35;
+
     // 전투 상태
     this.bossHP = this.stageData.bossHp;
     this.bossMaxHP = this.stageData.bossHp;
@@ -260,7 +269,7 @@ create() {
     // 플레이어 (사자) - 왼쪽 (이미지 스프라이트)
     this.playerSprite = this.add.image(250, height / 2, this.currentLionKey)
       .setOrigin(0.5)
-      .setScale(0.3); // 크기 조절
+      .setScale(this.lionScale); // 레벨별 크기
 
     this.playerNameText = this.add.text(250, height / 2 + 140, `${this.lionLevel.name}`, {
       fontSize: '24px',
@@ -274,7 +283,7 @@ create() {
     this.tweens.add({
       targets: this.playerSprite,
       alpha: 1,
-      scale: 0.3,
+      scale: this.lionScale,
       duration: 800,
       ease: 'Back.easeOut'
     });
@@ -1715,14 +1724,14 @@ updateBossHP() {
     // 공격 이미지로 변경 (크기도 키움)
     if (this.textures.exists(attackTexture)) {
       this.bossSprite.setTexture(attackTexture);
-      this.bossSprite.setScale(0.45); // 공격 시 더 크게
+      this.bossSprite.setScale(0.55); // 공격 시 훨씬 더 크게
     }
 
     // 공격 준비 (뒤로 살짝)
     this.tweens.add({
       targets: this.bossSprite,
       x: originalX + 30,
-      scale: 0.48,
+      scale: 0.6,
       duration: 400,
       ease: 'Power2',
       onComplete: () => {
@@ -1730,7 +1739,7 @@ updateBossHP() {
         this.tweens.add({
           targets: this.bossSprite,
           x: originalX - 150,
-          scale: 0.52,
+          scale: 0.7,
           duration: 600,
           ease: 'Power2',
           onComplete: () => {
@@ -1773,14 +1782,14 @@ updateBossHP() {
     // 공격 이미지로 변경 (크기도 키움)
     if (this.textures.exists(attackTexture)) {
       this.playerSprite.setTexture(attackTexture);
-      this.playerSprite.setScale(0.45); // 공격 시 더 크게
+      this.playerSprite.setScale(this.lionScale + 0.25); // 공격 시 훨씬 더 크게
     }
 
     // 돌진!
     this.tweens.add({
       targets: this.playerSprite,
       x: originalX + 100,
-      scale: 0.5,
+      scale: this.lionScale + 0.35,
       duration: 400,
       ease: 'Power2',
       onComplete: () => {
@@ -1788,7 +1797,7 @@ updateBossHP() {
         this.tweens.add({
           targets: this.playerSprite,
           x: originalX,
-          scale: 0.3,
+          scale: this.lionScale,
           duration: 600,
           ease: 'Back.easeOut',
           onComplete: () => {
@@ -1814,20 +1823,24 @@ updateBossHP() {
 
     // 피격 이미지로 변경 (크기도 키움)
     let originalTexture = null;
+    let originalScale = 0.3;
+
     if (isBoss) {
       originalTexture = `boss_${this.stageData.id}`;
+      originalScale = 0.3;
       const hurtTexture = `boss_${this.stageData.id}_hurt`;
       if (this.textures.exists(hurtTexture)) {
         this.bossSprite.setTexture(hurtTexture);
-        this.bossSprite.setScale(0.4); // 피격 시 더 크게
+        this.bossSprite.setScale(0.55); // 피격 시 훨씬 더 크게
       }
     } else {
       // 플레이어(사자)가 피격당하는 경우
       originalTexture = this.currentLionKey;
+      originalScale = this.lionScale;
       const hurtTexture = `${this.currentLionKey}_hurt`;
       if (this.textures.exists(hurtTexture)) {
         this.playerSprite.setTexture(hurtTexture);
-        this.playerSprite.setScale(0.4); // 피격 시 더 크게
+        this.playerSprite.setScale(this.lionScale + 0.25); // 피격 시 훨씬 더 크게
       }
     }
 
@@ -1843,7 +1856,7 @@ updateBossHP() {
         this.time.delayedCall(400, () => {
           if (originalTexture && this.textures.exists(originalTexture)) {
             target.setTexture(originalTexture);
-            target.setScale(0.3); // 원래 크기로 복구
+            target.setScale(originalScale); // 원래 크기로 복구
           }
           if (onComplete) onComplete();
         });
@@ -1909,12 +1922,21 @@ updateBossHP() {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
+    // 새로운 레벨의 크기 계산
+    const lionScales = {
+      '견습 사자': 0.30,
+      '전사 사자': 0.38,
+      '대장군 사자': 0.50,
+      '사자왕': 0.58
+    };
+    const newLionScale = lionScales[newLevel.name] || 0.35;
+
     // 화면 중앙으로 이동
     this.tweens.add({
       targets: this.playerSprite,
       x: width / 2,
       y: height / 2,
-      scale: 0.4,
+      scale: this.lionScale + 0.1,
       duration: 1000,
       ease: 'Power2',
       onComplete: () => {
@@ -1922,20 +1944,21 @@ updateBossHP() {
         this.tweens.add({
           targets: this.playerSprite,
           alpha: 0.3,
-          scale: 0.5,
+          scale: this.lionScale + 0.2,
           duration: 200,
           yoyo: true,
           repeat: 3,
           onComplete: () => {
-            // 새로운 이미지로 교체
+            // 새로운 이미지로 교체 및 크기 업데이트
             this.playerSprite.setTexture(newLionKey);
-            console.log(`🦁 사자 이미지 교체: ${newLionKey}`);
+            this.lionScale = newLionScale; // 새 레벨 크기로 업데이트
+            console.log(`🦁 사자 이미지 교체: ${newLionKey}, 새 크기: ${this.lionScale}`);
 
             // 진화 완료 애니메이션
             this.tweens.add({
               targets: this.playerSprite,
               alpha: 1,
-              scale: 0.35,
+              scale: this.lionScale + 0.05,
               duration: 500,
               ease: 'Back.easeOut',
               onComplete: () => {
@@ -1944,7 +1967,7 @@ updateBossHP() {
                   targets: this.playerSprite,
                   x: 250,
                   y: height / 2,
-                  scale: 0.3,
+                  scale: this.lionScale,
                   duration: 800,
                   ease: 'Power2',
                   onComplete: () => {
