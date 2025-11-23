@@ -10,7 +10,6 @@
     "lint": "eslint src --ext js,jsx"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@mediapipe/tasks-vision": "^0.10.21",
     "chart.js": "^4.4.0",
     "phaser": "^3.80.1"
@@ -21,18 +20,6 @@
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
     "vite": "^5.0.0"
-=======
-    "phaser": "^3.80.1",
-    "@mediapipe/tasks-vision": "^0.10.8",
-    "chart.js": "^4.4.0"
-  },
-  "devDependencies": {
-    "vite": "^5.0.0",
-    "tailwindcss": "^3.3.5",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.31",
-    "eslint": "^8.54.0"
->>>>>>> origin/main
   },
   "author": "loremipsum0116",
   "license": "GPL-3.0"
