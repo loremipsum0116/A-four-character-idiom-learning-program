@@ -47,14 +47,11 @@ export default class BattleScene extends Phaser.Scene {
     this.quizStartTime = 0;
     this.isProcessing = false;
 
-<<<<<<< HEAD
     // 전투 통계
     this.correctCount = 0;      // 정답 개수
     this.wrongCount = 0;        // 오답 개수
     this.battleStartTime = 0;   // 전투 시작 시각(ms)
 
-=======
->>>>>>> origin/main
     console.log(`⚔️ 전투 시작:`, this.stageData);
     console.log(`🦁 사자 능력치 - 체력: ${this.playerHP}/${this.playerMaxHP}, 공격 보너스: +${this.lionLevel.attackBonus}%`);
   }
@@ -84,11 +81,7 @@ export default class BattleScene extends Phaser.Scene {
     }
   }
 
-<<<<<<< HEAD
 create() {
-=======
-  create() {
->>>>>>> origin/main
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
@@ -104,7 +97,6 @@ create() {
 
     // 전투 시작 대사 출력
     this.showBattleStartDialogue();
-<<<<<<< HEAD
 
     window.addEventListener("finger-count", (e) => {
       const count = e.detail.count;  // 1~4
@@ -142,8 +134,6 @@ create() {
         this.submitDefenseAnswer(selectedIndex);
       }
     });
-=======
->>>>>>> origin/main
   }
 
   // ======================
@@ -208,7 +198,6 @@ create() {
         this.onDefeat();
       })
       .on('pointerover', () => loseBtn.setColor('#fca5a5'))
-<<<<<<< HEAD
         .on('pointerout', () => loseBtn.setColor('#ef4444'));
 
       // 📊 최종 결과 버튼 (디버그용, 모든 전투 스킵하고 최종 결과창으로 이동)
@@ -226,9 +215,6 @@ create() {
           .on('pointerover', () => finalBtn.setColor('#facc15'))
           .on('pointerout', () => finalBtn.setColor('#e5e7eb'));
   
-=======
-      .on('pointerout', () => loseBtn.setColor('#ef4444'));
->>>>>>> origin/main
   }
 
   createCharacters() {
@@ -381,7 +367,6 @@ create() {
    * @param {number} duration - 사용되지 않음 (하위 호환성 유지)
    * @param {boolean} force - 강제로 표시 (이전 대사 무시)
    */
-<<<<<<< HEAD
 async showDialogue(text, duration = 3000, force = false) {
     // 강제 모드가 아니고 이미 대사 표시 중이면 대기
     if (!force && this.isShowingDialogue) {
@@ -391,27 +376,11 @@ async showDialogue(text, duration = 3000, force = false) {
             await this.delay(100);
             waitTime += 100;
         }
-=======
-  async showDialogue(text, duration = 3000, force = false) {
-    // 강제 모드가 아니고 이미 대사 표시 중이면 대기
-    if (!force && this.isShowingDialogue) {
-      console.log('⏳ 대사 표시 대기 중...');
-      // 이전 대사가 끝날 때까지 최대 10초 대기
-      let waitTime = 0;
-      while (this.isShowingDialogue && waitTime < 10000) {
-        await this.delay(100);
-        waitTime += 100;
-      }
->>>>>>> origin/main
     }
 
     // 강제 모드면 기존 트윈 중단
     if (force && this.isShowingDialogue) {
-<<<<<<< HEAD
         this.tweens.killTweensOf([this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint]);
-=======
-      this.tweens.killTweensOf([this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint]);
->>>>>>> origin/main
     }
 
     this.isShowingDialogue = true;
@@ -422,7 +391,6 @@ async showDialogue(text, duration = 3000, force = false) {
     this.dialogueArrow.setVisible(false);
     this.dialogueHint.setVisible(false);
 
-<<<<<<< HEAD
     // 타이핑 상태 초기화
     this.isTypingDialogue = true;
     this.currentDialogueText = this.dialogueText;
@@ -436,14 +404,11 @@ async showDialogue(text, duration = 3000, force = false) {
     };
     this.input.keyboard.once('keydown-SPACE', spaceHandler);
 
-=======
->>>>>>> origin/main
     // 타이핑 효과
     this.dialogueText.setText('');
     const chars = text.split('');
 
     for (let i = 0; i < chars.length; i++) {
-<<<<<<< HEAD
         if (!this.isTypingDialogue) {
             this.dialogueText.setText(text);
             break;
@@ -456,31 +421,16 @@ async showDialogue(text, duration = 3000, force = false) {
     this.isTypingDialogue = false;
 
     // 화살표와 안내 텍스트 표시
-=======
-      this.dialogueText.setText(this.dialogueText.text + chars[i]);
-      await this.delay(20); // 타이핑 속도 (더 빠르게)
-    }
-
-    // 타이핑 완료 후 화살표와 안내 텍스트 표시
->>>>>>> origin/main
     this.dialogueArrow.setVisible(true);
     this.dialogueHint.setVisible(true);
 
     // 화살표 깜빡임 효과
     this.tweens.add({
-<<<<<<< HEAD
         targets: this.dialogueArrow,
         alpha: 0.3,
         duration: 500,
         yoyo: true,
         repeat: -1
-=======
-      targets: this.dialogueArrow,
-      alpha: 0.3,
-      duration: 500,
-      yoyo: true,
-      repeat: -1
->>>>>>> origin/main
     });
 
     // 사용자 입력 대기
@@ -492,7 +442,6 @@ async showDialogue(text, duration = 3000, force = false) {
 
     // 페이드아웃
     this.tweens.add({
-<<<<<<< HEAD
         targets: [this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint],
         alpha: 0,
         duration: 300,
@@ -520,24 +469,6 @@ showFullDialogue() {
     }
 }
 
-=======
-      targets: [this.dialogueBox, this.dialogueText, this.dialogueArrow, this.dialogueHint],
-      alpha: 0,
-      duration: 300,
-      onComplete: () => {
-        this.dialogueBox.setVisible(false);
-        this.dialogueText.setVisible(false);
-        this.dialogueArrow.setVisible(false);
-        this.dialogueHint.setVisible(false);
-        this.dialogueBox.setAlpha(1);
-        this.dialogueText.setAlpha(1);
-        this.dialogueArrow.setAlpha(1);
-        this.dialogueHint.setAlpha(1);
-        this.isShowingDialogue = false;
-      }
-    });
-  }
->>>>>>> origin/main
 
   /**
    * 대사 진행 입력 대기 (스페이스바 또는 화살표 클릭)
@@ -578,7 +509,6 @@ showFullDialogue() {
    * 전투 시작 대사
    */
   async showBattleStartDialogue() {
-<<<<<<< HEAD
       this.showMessage(`${this.stageData.name} 보스와의 전투를 시작합니다!`);
 
 
@@ -589,9 +519,6 @@ showFullDialogue() {
           this.time.delayedCall(500, () => this.startPlayerTurn());
           return;
       }
-=======
-    this.showMessage(`${this.stageData.name} 보스와의 전투를 시작합니다!`);
->>>>>>> origin/main
 
     try {
       const dialogue = await geminiService.getBattleStartDialogue(
@@ -633,7 +560,6 @@ showFullDialogue() {
    * 보스 공격 대사
    */
   async showBossAttackDialogue() {
-<<<<<<< HEAD
 
       if (this.stageData.id === 99 || this.stageData.name === '???') {
           await this.showDialogue('...', 2000, true);
@@ -642,9 +568,6 @@ showFullDialogue() {
 
 
       try {
-=======
-    try {
->>>>>>> origin/main
       const dialogue = await geminiService.getBossAttackDialogue(
         this.stageData.name,
         this.lionLevel.name
@@ -661,7 +584,6 @@ showFullDialogue() {
    * 승리 대사
    */
   async showVictoryDialogueText() {
-<<<<<<< HEAD
 
       if (this.stageData.id === 99 || this.stageData.name === '???') {
           await this.showDialogue('...', 3000, true);
@@ -669,9 +591,6 @@ showFullDialogue() {
       }
 
       try {
-=======
-    try {
->>>>>>> origin/main
       const dialogue = await geminiService.getVictoryDialogue(
         this.stageData.name,
         this.lionLevel.name,
@@ -699,7 +618,6 @@ showFullDialogue() {
    * 패배 대사
    */
   async showDefeatDialogueText() {
-<<<<<<< HEAD
 
       // 🔒 히든 보스에게 패배했을 때도 보스는 "..."만
       if (this.stageData.id === 99 || this.stageData.name === '???') {
@@ -708,9 +626,6 @@ showFullDialogue() {
       }
 
       try {
-=======
-    try {
->>>>>>> origin/main
       const dialogue = await geminiService.getDefeatDialogue(
         this.stageData.name,
         this.lionLevel.name
@@ -866,14 +781,11 @@ showFullDialogue() {
   startPlayerTurn() {
     if (this.isProcessing) return;
 
-<<<<<<< HEAD
     // 전투 시작 시간 기록 (첫 플레이어 턴에서 한 번만)
     if (this.battleStartTime === 0) {
           this.battleStartTime = Date.now();
     }
 
-=======
->>>>>>> origin/main
     this.turnPhase = 'SELECT_DIFFICULTY';
     this.showMessage('공격 턴! 난이도를 선택하세요.');
     this.showDifficultySelector();
@@ -1028,10 +940,7 @@ showFullDialogue() {
   }
 
   showQuiz() {
-<<<<<<< HEAD
       this.currentQuizType = "attack";   // ← 추가
-=======
->>>>>>> origin/main
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
@@ -1111,7 +1020,6 @@ showFullDialogue() {
     // 정답 확인
     const isCorrect = selectedIndex === this.currentQuiz.answer;
 
-<<<<<<< HEAD
     // 통계 업데이트
     if (isCorrect) {
         this.correctCount += 1;
@@ -1119,8 +1027,6 @@ showFullDialogue() {
         this.wrongCount += 1;
     }
 
-=======
->>>>>>> origin/main
     console.log(`📝 답안 제출:`, { selectedIndex, isCorrect, responseTime });
 
     // UI 제거
@@ -1298,10 +1204,7 @@ showFullDialogue() {
   }
 
   showDefenseQuiz() {
-<<<<<<< HEAD
       this.currentQuizType = "defense";   // ← 추가
-=======
->>>>>>> origin/main
     this.quizStartTime = Date.now();
     this.showMessage(`🛡️ 방어 문제: ${this.currentQuiz.question}`);
 
@@ -1342,7 +1245,6 @@ showFullDialogue() {
     const responseTime = Date.now() - this.quizStartTime;
     const defenseSuccess = selectedIndex === this.currentQuiz.answer;
 
-<<<<<<< HEAD
     // 통계 업데이트 (방어도 정답/오답에 포함)
     if (defenseSuccess) {
         this.correctCount += 1;
@@ -1350,8 +1252,6 @@ showFullDialogue() {
         this.wrongCount += 1;
     }
 
-=======
->>>>>>> origin/main
     console.log(`🛡️ 방어 답안:`, { selectedIndex, defenseSuccess, responseTime });
 
     this.clearQuizUI();
@@ -1400,7 +1300,6 @@ showFullDialogue() {
   // HP 바 업데이트
   // ======================
 
-<<<<<<< HEAD
 updatePlayerHP() {
     const newWidth = 200 * (this.playerHP / this.playerMaxHP);
     this.tweens.add({
@@ -1421,27 +1320,6 @@ updateBossHP() {
     this.bossHPText.setText(`${this.bossHP}/${this.bossMaxHP}`);
 }
 
-=======
-  updatePlayerHP() {
-    const ratio = this.playerHP / this.playerMaxHP;
-    this.tweens.add({
-      targets: this.playerHPBar,
-      scaleX: ratio,
-      duration: 500
-    });
-    this.playerHPText.setText(`${this.playerHP}/${this.playerMaxHP}`);
-  }
-
-  updateBossHP() {
-    const ratio = this.bossHP / this.bossMaxHP;
-    this.tweens.add({
-      targets: this.bossHPBar,
-      scaleX: ratio,
-      duration: 500
-    });
-    this.bossHPText.setText(`${this.bossHP}/${this.bossMaxHP}`);
-  }
->>>>>>> origin/main
 
   // ======================
   // 전투 종료
@@ -1449,10 +1327,7 @@ updateBossHP() {
 
   async onVictory() {
     console.log('🎉 승리!');
-<<<<<<< HEAD
     this.saveBattleResult(true);
-=======
->>>>>>> origin/main
     this.showMessage(`🎉 ${this.stageData.name} 보스를 물리쳤습니다!`);
 
     // 난이도 선택 버튼 및 퀴즈 UI 제거
@@ -1544,11 +1419,7 @@ updateBossHP() {
 
             // FR 4.11: 통계 표시
             this.time.delayedCall(2500, () => {
-<<<<<<< HEAD
                 this.showBattleResult(true);
-=======
-              this.scene.start('StageSelectScene');
->>>>>>> origin/main
             });
           });
         });
@@ -1557,16 +1428,11 @@ updateBossHP() {
     } else {
       // 레벨업 없으면 바로 스테이지 선택으로
       this.time.delayedCall(2500, () => {
-<<<<<<< HEAD
           this.showBattleResult(true);
-=======
-        this.scene.start('StageSelectScene');
->>>>>>> origin/main
       });
     }
   }
 
-<<<<<<< HEAD
     /**
   * 전투 결과창 표시
   * @param {boolean} isVictory - 승리 여부
@@ -1670,10 +1536,6 @@ updateBossHP() {
   async onDefeat() {
     console.log('💀 패배...');
     this.saveBattleResult(false);
-=======
-  async onDefeat() {
-    console.log('💀 패배...');
->>>>>>> origin/main
     this.showMessage('💀 패배했습니다. 다시 도전하세요!');
 
     // 난이도 선택 버튼 및 퀴즈 UI 제거
@@ -1691,11 +1553,7 @@ updateBossHP() {
     await this.showDefeatDialogueText();
 
     this.time.delayedCall(2500, () => {
-<<<<<<< HEAD
         this.showBattleResult(false);
-=======
-      this.scene.start('StageSelectScene');
->>>>>>> origin/main
     });
   }
 
@@ -2011,7 +1869,6 @@ updateBossHP() {
       saveGameData('maxClearedStage', clearedStageId.toString());
     }
   }
-<<<<<<< HEAD
     saveBattleResult(isVictory) {
         let elapsedSec = 0;
 
@@ -2048,6 +1905,3 @@ updateBossHP() {
         saveGameData('battleStats', JSON.stringify(stats));
     }
 }
-=======
-}
->>>>>>> origin/main
