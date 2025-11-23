@@ -47,7 +47,7 @@ export default class InfiniteModeScene extends Phaser.Scene {
         bossMaxHP: 9999999,
         bossAttack: 0,
         description: "끝없이 도전하는 사자성어 짐승",
-        image: 'assets/images/bosses/tiger.png' 
+        image: '../../../public/pictures/arcade-boxing-punch-machine-coin-operated.png' 
     };
     
     this.lionLevel = getLionLevel(this.initialBossStageId);
@@ -58,7 +58,7 @@ export default class InfiniteModeScene extends Phaser.Scene {
 
   preload() {
     this.load.image(`boss_${this.stageData.id}`, this.stageData.image); 
-    this.load.image(this.currentLionKey, 'assets/images/lions/lion_1.png');
+    this.load.image(this.currentLionKey, '../../../public/pictures/lion-king.png');
   }
 
   create() {
@@ -371,10 +371,10 @@ export default class InfiniteModeScene extends Phaser.Scene {
       const width = this.cameras.main.width;
       const height = this.cameras.main.height;
       
-      this.playerSprite = this.add.sprite(width / 4, height - 150, this.currentLionKey)
-        .setScale(0.5).setOrigin(0.5, 1);
-      this.bossSprite = this.add.sprite(width * 3 / 4, height / 2, `boss_${this.stageData.id}`)
-        .setScale(0.7).setOrigin(0.5, 1);
+      this.playerSprite = this.add.sprite(width / 5, height - 150, this.currentLionKey)
+        .setScale(0.3).setOrigin(0.5, 1);
+this.bossSprite = this.add.sprite(width * 4 / 5, height - 100, `boss_${this.stageData.id}`)
+        .setScale(0.6).setOrigin(0.5, 1);
   }
 
   createMessageBox() {
