@@ -144,3 +144,17 @@ input::placeholder {
 .pulse {
   animation: pulse 2s ease-in-out infinite;
 }
+
+video, canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#status {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  font-size: 24px;
+  color: white;
+  text-shadow: 2px 2px 5px black;
+}

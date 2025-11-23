@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { GAME_CONSTANTS } from '../../utils/constants.js';
 import { getLionLevel } from '../../utils/damageCalculator.js';
-import { loadGameData } from '../../utils/storageManager.js';
+// [수정] saveGameData를 추가로 가져옵니다.
+import { loadGameData, saveGameData } from '../../utils/storageManager.js'; 
 
 /**
  * StageSelectScene - 스테이지 선택
@@ -40,6 +41,9 @@ export default class StageSelectScene extends Phaser.Scene {
 
     // 뒤로 가기 버튼
     this.createBackButton();
+
+    // [추가] 모든 스테이지 클리어 처리 디버그 버튼
+    this.createDebugClearAllButton();
   }
 
   createLionStatusPanel() {
@@ -206,5 +210,49 @@ export default class StageSelectScene extends Phaser.Scene {
       .on('pointerdown', () => this.scene.start('MainMenuScene'))
       .on('pointerover', () => backBtn.setColor('#ffffff'))
       .on('pointerout', () => backBtn.setColor('#94a3b8'));
+  }
+  
+  // [추가] 모든 스테이지 클리어 처리 기능
+  createDebugClearAllButton() {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+
+    const clearAllBtn = this.add.text(width - 20, height - 20, '👑 전체 클리어 (DEBUG)', {
+        fontSize: '18px',
+        color: '#fbbf24',
+        backgroundColor: '#431407',
+        padding: { x: 10, y: 5 },
+        fontStyle: 'bold'
+    }).setOrigin(1, 1) // 오른쪽 아래
+        .setInteractive({ useHandCursor: true })
+        .setDepth(999) // 다른 UI 위에 표시
+        .on('pointerdown', () => this.handleClearAllStages())
+        .on('pointerover', () => clearAllBtn.setColor('#fde047'))
+        .on('pointerout', () => clearAllBtn.setColor('#fbbf24'));
+  }
+  
+  // [추가] 전체 클리어 로직
+  handleClearAllStages() {
+    const stages = GAME_CONSTANTS.STAGES;
+    let maxStageId = 12;
+
+    if (stages && stages.length > 0) {
+      // GAME_CONSTANTS에 정의된 마지막 스테이지 ID를 사용
+      maxStageId = stages[stages.length - 1].id;
+    }
+
+    // 게임 데이터에 클리어 상태 저장
+    saveGameData('maxClearedStage', maxStageId.toString());
+
+    // 디버그로도 전체 클리어하면 히든 보스 해금
+    saveGameData('hiddenBossUnlocked', 'true');
+    
+    console.log(`🏆 디버그: 모든 스테이지 (${maxStageId}) 클리어 처리 완료`);
+
+    // 사용자에게 알림 후 씬 재시작
+    alert(`🎉 모든 스테이지 (${maxStageId})가 클리어 처리되었습니다!`);
+    
+    // 씬을 재시작하여 클리어 상태를 즉시 반영
+    this.scene.restart();
   }
 }
