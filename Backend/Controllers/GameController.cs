@@ -193,16 +193,20 @@ namespace IdiomLearningAPI.Controllers
                 }
 
                 // 이미 클리어한 스테이지인지 확인
-                if (!user.ClearedStages.Contains(request.StageId))
+                var clearedStages = user.ClearedStages;
+                if (!clearedStages.Contains(request.StageId))
                 {
-                    user.ClearedStages.Add(request.StageId);
+                    clearedStages.Add(request.StageId);
+                    user.ClearedStages = clearedStages; // setter 호출하여 ClearedStagesJson 업데이트
 
                     // FR 5.2: 12단계 모두 클리어 시 엔딩 콘텐츠 잠금 해제
-                    if (user.ClearedStages.Count >= 12)
+                    if (clearedStages.Count >= 12)
                     {
-                        user.UnlockedContent.HiddenBoss = true;
-                        user.UnlockedContent.InfiniteMode = true;
-                        user.UnlockedContent.PvpMode = true;
+                        var unlockedContent = user.UnlockedContent;
+                        unlockedContent.HiddenBoss = true;
+                        unlockedContent.InfiniteMode = true;
+                        unlockedContent.PvpMode = true;
+                        user.UnlockedContent = unlockedContent; // setter 호출
                     }
 
                     // EF Core가 변경사항을 자동으로 추적하므로 SaveChangesAsync만 호출
