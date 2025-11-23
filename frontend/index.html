@@ -23,6 +23,7 @@
       align-items: center;
       width: 100vw;
       height: 100vh;
+      position: relative;
     }
     #loading {
       position: absolute;
@@ -33,6 +34,7 @@
       font-size: 24px;
       font-weight: bold;
       text-align: center;
+      z-index: 2;
     }
     .spinner {
       border: 4px solid rgba(255, 255, 255, 0.3);
@@ -47,15 +49,43 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    /* 제스처 UI */
+    #video, #canvas {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      height: 240px;
+      border: 2px solid white;
+      border-radius: 8px;
+      z-index: 1;
+    }
+    #status {
+      position: absolute;
+      bottom: 280px;
+      right: 20px;
+      font-size: 20px;
+      color: white;
+      text-shadow: 2px 2px 5px black;
+      z-index: 3;
+    }
   </style>
 </head>
 <body>
   <div id="game-container">
+    <!-- 게임 로딩 화면 -->
     <div id="loading">
       <div class="spinner"></div>
       <p>사자의 역습 로딩 중...</p>
     </div>
+
   </div>
+
+  <!-- 기존 게임 JS -->
   <script type="module" src="/src/main.js"></script>
+
+  <!-- 손 제스처 인식 JS -->
+  <script type="module" src="/src/gesture.js"></script>
 </body>
 </html>
