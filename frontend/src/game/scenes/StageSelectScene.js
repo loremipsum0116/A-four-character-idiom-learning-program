@@ -1,12 +1,8 @@
 import Phaser from 'phaser';
 import { GAME_CONSTANTS } from '../../utils/constants.js';
 import { getLionLevel } from '../../utils/damageCalculator.js';
-<<<<<<< HEAD
 // [수정] saveGameData를 추가로 가져옵니다.
 import { loadGameData, saveGameData } from '../../utils/storageManager.js'; 
-=======
-import { loadGameData } from '../../utils/storageManager.js';
->>>>>>> origin/main
 
 /**
  * StageSelectScene - 스테이지 선택
@@ -45,12 +41,9 @@ export default class StageSelectScene extends Phaser.Scene {
 
     // 뒤로 가기 버튼
     this.createBackButton();
-<<<<<<< HEAD
 
     // [추가] 모든 스테이지 클리어 처리 디버그 버튼
     this.createDebugClearAllButton();
-=======
->>>>>>> origin/main
   }
 
   createLionStatusPanel() {
@@ -218,7 +211,6 @@ export default class StageSelectScene extends Phaser.Scene {
       .on('pointerover', () => backBtn.setColor('#ffffff'))
       .on('pointerout', () => backBtn.setColor('#94a3b8'));
   }
-<<<<<<< HEAD
   
   // [추가] 모든 스테이지 클리어 처리 기능
   createDebugClearAllButton() {
@@ -264,6 +256,3 @@ export default class StageSelectScene extends Phaser.Scene {
     this.scene.restart();
   }
 }
-=======
-}
->>>>>>> origin/main
