@@ -1712,16 +1712,17 @@ updateBossHP() {
       this.idleTween.pause();
     }
 
-    // 공격 이미지로 변경
+    // 공격 이미지로 변경 (크기도 키움)
     if (this.textures.exists(attackTexture)) {
       this.bossSprite.setTexture(attackTexture);
+      this.bossSprite.setScale(0.45); // 공격 시 더 크게
     }
 
     // 공격 준비 (뒤로 살짝)
     this.tweens.add({
       targets: this.bossSprite,
       x: originalX + 30,
-      scaleX: 0.32,
+      scale: 0.48,
       duration: 400,
       ease: 'Power2',
       onComplete: () => {
@@ -1729,7 +1730,7 @@ updateBossHP() {
         this.tweens.add({
           targets: this.bossSprite,
           x: originalX - 150,
-          scaleX: 0.35,
+          scale: 0.52,
           duration: 600,
           ease: 'Power2',
           onComplete: () => {
@@ -1740,7 +1741,7 @@ updateBossHP() {
             this.tweens.add({
               targets: this.bossSprite,
               x: originalX,
-              scaleX: 0.3,
+              scale: 0.3,
               duration: 800,
               ease: 'Back.easeOut',
               onComplete: () => {
@@ -1769,15 +1770,17 @@ updateBossHP() {
     const originalX = this.playerSprite.x;
     const attackTexture = `${this.currentLionKey}_attack`;
 
-    // 공격 이미지로 변경
+    // 공격 이미지로 변경 (크기도 키움)
     if (this.textures.exists(attackTexture)) {
       this.playerSprite.setTexture(attackTexture);
+      this.playerSprite.setScale(0.45); // 공격 시 더 크게
     }
 
     // 돌진!
     this.tweens.add({
       targets: this.playerSprite,
       x: originalX + 100,
+      scale: 0.5,
       duration: 400,
       ease: 'Power2',
       onComplete: () => {
@@ -1785,6 +1788,7 @@ updateBossHP() {
         this.tweens.add({
           targets: this.playerSprite,
           x: originalX,
+          scale: 0.3,
           duration: 600,
           ease: 'Back.easeOut',
           onComplete: () => {
@@ -1808,13 +1812,14 @@ updateBossHP() {
     const originalX = target.x;
     const isBoss = target === this.bossSprite;
 
-    // 피격 이미지로 변경
+    // 피격 이미지로 변경 (크기도 키움)
     let originalTexture = null;
     if (isBoss) {
       originalTexture = `boss_${this.stageData.id}`;
       const hurtTexture = `boss_${this.stageData.id}_hurt`;
       if (this.textures.exists(hurtTexture)) {
         this.bossSprite.setTexture(hurtTexture);
+        this.bossSprite.setScale(0.4); // 피격 시 더 크게
       }
     } else {
       // 플레이어(사자)가 피격당하는 경우
@@ -1822,6 +1827,7 @@ updateBossHP() {
       const hurtTexture = `${this.currentLionKey}_hurt`;
       if (this.textures.exists(hurtTexture)) {
         this.playerSprite.setTexture(hurtTexture);
+        this.playerSprite.setScale(0.4); // 피격 시 더 크게
       }
     }
 
@@ -1833,10 +1839,11 @@ updateBossHP() {
       yoyo: true,
       ease: 'Power2',
       onComplete: () => {
-        // 약간의 지연 후 원래 이미지로 복귀
+        // 약간의 지연 후 원래 이미지 및 크기로 복귀
         this.time.delayedCall(400, () => {
           if (originalTexture && this.textures.exists(originalTexture)) {
             target.setTexture(originalTexture);
+            target.setScale(0.3); // 원래 크기로 복구
           }
           if (onComplete) onComplete();
         });
